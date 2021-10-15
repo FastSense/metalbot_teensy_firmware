@@ -1,5 +1,6 @@
 #ifndef MOTOR_97634894045734
 #define MOTOR_97634894045734
+#include "Filter.hpp"
 #include "Regulator.hpp"
 #include <Encoder.h>
 
@@ -18,18 +19,17 @@ class Motor {
 
 public:
   Regulator pider; // __DBG!!!!!
-
+  Filter kalman;   //__DBG!!!!
   Motor(MotorPins pins, int deadzone = 2, float limit = 300, float kp = 0.9,
-        float ki = 0.8, float kd = 0.02)
+        float ki = 0.8, float kd = 0.02, float dt = 0.02,
+        float model_noise = 150, float measurement_noise = 2)
       : pins_(pins), encoder_(pins.encA, pins.encB), deadzone_(deadzone),
-        pider(limit, kp, ki, kd){
-            // Serial.println(("M")); //DBG
-        };
+        pider(limit, kp, ki, kd), kalman(dt, model_noise, measurement_noise){};
 
   void start() {
     pinMode(pins_.pwm, OUTPUT);
     // analogWriteFrequency(pins_.pwm, 585937.5);
-    analogWriteFrequency(pins_.pwm, 36621);
+    analogWriteFrequency(pins_.pwm, 36621); // __DBG
     pinMode(pins_.front, OUTPUT);
     pinMode(pins_.back, OUTPUT);
     reset();
@@ -59,11 +59,9 @@ public:
     }
   }
 
-  float getSpeed(size_t dt) {
-    tick_count_ = encoder_.read();
-    tick_speed_ = (tick_count_ - past_tick_count_) / (float)dt;
-    past_tick_count_ = tick_count_;
-    return tick_speed_;
+  float getSpeed() {
+    kalman.update(encoder_.read());
+    return kalman.getX(1);
   }
 
   int getTickCount() { return encoder_.read(); }

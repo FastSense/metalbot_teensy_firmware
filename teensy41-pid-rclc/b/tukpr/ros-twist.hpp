@@ -29,7 +29,7 @@ rcl_subscription_t twist_sub;
 rcl_timer_t pid_timer;
 
 rcl_timer_t stop_timer;
-size_t stop_check = 0;
+size_t on_twist_msg = 0;
 
 Robot_t robot;
 
@@ -43,10 +43,10 @@ void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
 void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    if (!stop_check) {
-      robot.updateTargetWheelsSpeed({{0, 0, 0}, {0, 0, 0}});
+    if (on_twist_msg) {
+      on_twist_msg = 0;
     } else {
-      stop_check = 0;
+      robot.updateTargetWheelsSpeed({{0, 0, 0}, {0, 0, 0}});
     }
   }
 }
@@ -56,7 +56,7 @@ void twist_sub_cb(const void *msgin) {
       (const geometry_msgs__msg__Twist *)msgin;
   robot.updateTargetWheelsSpeed(
       {{msg->linear.x, 0, 0}, {0, 0, msg->angular.z}});
-  stop_check = 1;
+  on_twist_msg = 1;
 }
 
 void rclSetup() {

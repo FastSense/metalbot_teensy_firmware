@@ -1,6 +1,6 @@
 #ifndef REGULATOR_3502472090341
 #define REGULATOR_3502472090341
-#define IELS 3
+#define IELS 0.1
 class Regulator {
 
   float limit_;
@@ -16,7 +16,7 @@ public:
   Regulator(float limit = 0, float kp = 0, float ki = 0, float kd = 0)
       : limit_(limit), kp_(kp), ki_(ki), kd_(kd) {}
 
-  float update(float error = 0, float dts = 0.02) {
+  float update(float error = 0, float dts = 0.01) {
     past_error_ = error_;
     error_ = error;
     if (error_summary_ < limit_ && error_summary_ > -limit_)
@@ -45,15 +45,16 @@ public:
 ////////////
 
 /*
-how to feed kalman X (3 dim) to PID??
-
-в старом варианте одна ошибка, тк один вход, необходимо добавить еще две ошибки
-(вектор) kp_ * error_ + ki_ * error_summary_ + kd_ * (error_ - past_error_) /
-dts;
-
-          ---->>> */
-
-#include <BasicLinearAlgebra.h>
-BLA::Matrix<3> target = ? ? ? ? ? ? ? ? ? ? ;
-BLA::Matrix<3> error = target - matX;
-result = kp_ * error(1) + ki_ * error(0) + kd_ * error(2);
+// how to feed kalman X (3 dim) to PID??
+//
+// в старом варианте одна ошибка, тк один вход, необходимо добавить еще две
+ошибки
+// (вектор) kp_ * error_ + ki_ * error_summary_ + kd_ * (error_ - past_error_) /
+// dts;
+//
+//           ---->>> */
+//
+// #include <BasicLinearAlgebra.h>
+// BLA::Matrix<3> target = ? ? ? ? ? ? ? ? ? ? ;
+// BLA::Matrix<3> error = target - matX;
+// result = kp_ * error(1) + ki_ * error(0) + kd_ * error(2);

@@ -40,10 +40,10 @@ public:
     target_[1] = target_[3] = twist.linear.x + twist.angular.z * base_width_;
   }
 
-  void updateRegulation(size_t dt = 20) {
+  void updateRegulation() {
     for (size_t i = 0; i < 4; i++) {
       motors_[i].setSpeed(motors_[i].pider.update( // pass update directly
-          target_[i] - motors_[i].getSpeed(dt)));  // pass error directly
+          target_[i] - motors_[i].getSpeed()));    // pass error directly
     }
   }
 };
