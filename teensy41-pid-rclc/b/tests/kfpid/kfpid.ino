@@ -5,11 +5,11 @@
 
 #define DT 10
 #define IPR 1836
+#define PI 3.14
+#define WHEEL_D 0.133
 
 Encoder enc(2, 3);
-
 Filter_t kalman;
-
 Regulator pid;
 
 float raw = 0; // rounds
@@ -29,9 +29,11 @@ void loop() {
   pid.updateTgt(tgt_V);
   pid.updateRes(kalman.getX(0), kalman.getX(1), kalman.getX(2));
 
-  Serial6.print(kalman.getX(1));
-  Serial6.print(" ");
-  Serial6.println(pid.getRes());
+  // Serial6.print(kalman.getX(1));
+  // Serial6.print(" ");
+  // Serial6.println(pid.getRes());
+
+  Serial6.println(kalman.getX(0) * PI * WHEEL_D); // odom dbg
 
   praw = raw;
   delay(DT);

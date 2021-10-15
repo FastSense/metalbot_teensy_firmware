@@ -19,8 +19,7 @@ class Filter_t {
   BLA::Matrix<3, 3> matQ;
 
 public:
-  Filter_t(float dt = 0.01, float model_noise = 1500,
-           float measurement_noise = 2)
+  Filter_t(float dt = 0.01, float model_noise = 1, float measurement_noise = 1)
       : dt_(dt), model_noise_(model_noise),
         measurement_noise_(measurement_noise) {
 
