@@ -21,6 +21,7 @@ public:
   Regulator(float limit_ = 1, float kp_ = 0.01, float ki_ = 0.00,
             float kd_ = 0.00)
       : limit(limit_), kp(kp_), ki(ki_), kd(kd_) {}
+
   void updateTgt(float tgt_V) { // Twist_msg -> i_motor: tgt_V -> tgt_A, tgt_S..
     tgt_A = (tgt_V - tgt_V_past) / dt;
     tgt_S += tgt_V * dt;

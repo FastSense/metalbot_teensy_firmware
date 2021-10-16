@@ -12,13 +12,12 @@ class Motor {
 
   const int IPR_ = 1836;
   const float pi_ = 3.141593;
-  const float base_width_ = 0.42;
   const float wheel_diameter_ = 0.133;
   const float k_pwm = 200;
 
   MotorPins pins_;
   Encoder encoder_;
-  int deadzone_;
+  float deadzone_;
   int tick_count_;
   int past_tick_count_;
   float tick_speed_;
@@ -26,9 +25,9 @@ class Motor {
 public:
   Regulator pid;   // __DBG!!!!!
   Filter_t kalman; //__DBG!!!!
-  Motor(MotorPins pins, int deadzone = 1, float limit = 1, float kp = 1.0,
-        float ki = 0.8, float kd = 0.0015, float dt = 0.01,
-        float model_noise = 15.0, float measurement_noise = 0.001)
+  Motor(MotorPins pins, float deadzone = 0.6, float limit = 1, float kp = 0.25,
+        float ki = 5.0, float kd = 0.0025, float dt = 0.01,
+        float model_noise = 25.0, float measurement_noise = 0.001)
       : pins_(pins), encoder_(pins.encA, pins.encB), deadzone_(deadzone),
         pid(limit, kp, ki, kd), kalman(dt, model_noise, measurement_noise){};
 

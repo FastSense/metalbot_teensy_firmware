@@ -13,7 +13,7 @@ struct Twist_t {
 
 class Robot_t {
 
-  float base_width_ = 0.49; // virtual
+  float base_width_ = 0.51; // virtual
 
 public:
   double target_[4] = {0, 0, 0, 0}; // _DBG!!!!!!

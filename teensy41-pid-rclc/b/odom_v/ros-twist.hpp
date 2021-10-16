@@ -14,7 +14,7 @@
 #include "Robot.hpp"
 
 constexpr size_t PID_DT = 10;
-constexpr size_t STOP_DT = 250;
+constexpr size_t STOP_DT = 205;
 constexpr size_t PUB_DT = 100;
 
 rcl_allocator_t allocator;
@@ -85,7 +85,7 @@ void rclSetup() {
 
   rclc_publisher_init_default(
       &twist_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "micro_ros_twist");
+      "velocity");
 
   // twist_sub
   rclc_subscription_init_default(
