@@ -1,5 +1,6 @@
 #ifndef KF_PID_485367532
 #define KF_PID_485367532
+#include "Common.hpp"
 
 class Regulator {
 

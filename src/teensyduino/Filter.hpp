@@ -1,7 +1,7 @@
 #ifndef FILTER_4534532
 #define FILTER_4534532
+#include "Common.hpp"
 #include <BasicLinearAlgebra.h>
-
 class Filter_t {
 
   float dt_;
