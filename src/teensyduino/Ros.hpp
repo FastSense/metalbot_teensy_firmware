@@ -1,5 +1,5 @@
-#ifndef ROS_TWIST_23646034973906
-#define ROS_TWIST_23646034973906
+#ifndef ROS_23646034973906
+#define ROS_23646034973906
 
 #include <micro_ros_arduino.h>
 
@@ -85,12 +85,12 @@ void rclSetup() {
   rclc_node_init_default(&node, "micro_ros_arduino_node", "", &support);
 
   // vel_pub
-  rclc_publisher_init_best_effort(
+  rclc_publisher_init_default(
       &twist_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
       "velocity");
 
   // twist_sub (-
-  rclc_subscription_init_best_effort(
+  rclc_subscription_init_default(
       &twist_sub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
       "cmd_vel");
   callbacks_count++;
@@ -111,4 +111,4 @@ void rclSetup() {
   //     -)
 }
 
-#endif /* end of include guard: ROS-TWIST_23646034973906 */
+#endif /* end of include guard: ROS_23646034973906 */

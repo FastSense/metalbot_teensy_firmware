@@ -25,7 +25,7 @@ public:
 
   void updateTgt(float tgt_V) { // Twist_msg -> i_motor: tgt_V -> tgt_A, tgt_S..
     tgt_A = (tgt_V - tgt_V_past) / dt;
-    tgt_S += tgt_V * dt;
+    tgt_S += tgt_V * dt; // add fade
     tgt_V_past = tgt_V;
   };
   void updateRes(float xS, float xV, float xA) {
