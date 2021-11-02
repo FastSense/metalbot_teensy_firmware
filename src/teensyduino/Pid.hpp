@@ -23,9 +23,9 @@ public:
             float kd_ = 0.00)
       : limit(limit_), kp(kp_), ki(ki_), kd(kd_) {}
 
-  void updateTgt(float tgt_V) { // Twist_msg -> i_motor: tgt_V -> tgt_A, tgt_S..
+  void updateTgt(float tgt_V, float xS) {
     tgt_A = (tgt_V - tgt_V_past) / dt;
-    tgt_S += tgt_V * dt; // add fade
+    tgt_S += tgt_V * dt + (xS - tgt_S) * FADE; // add fade
     tgt_V_past = tgt_V;
   };
   void updateRes(float xS, float xV, float xA) {

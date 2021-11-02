@@ -76,7 +76,7 @@ public:
   void resetTick() { encoder_.write(0); }
 
   void updateSpeed(double target) {
-    pid.updateTgt(target);
+    pid.updateTgt(target, getX(0));
     updateSensor();
     pid.updateRes(getX(0), getX(1), getX(2));
     setSpeed(pid.getRes() * k_pwm);
