@@ -9,6 +9,7 @@
 #include <rclc/rclc.h>
 #include <stdio.h>
 
+#include <geometry_msgs/msg/pose.h>
 #include <geometry_msgs/msg/twist.h>
 
 #include "Common.hpp"
@@ -28,22 +29,38 @@ rcl_node_t node;
 rclc_executor_t exe;
 
 geometry_msgs__msg__Twist twist_msg_pub;
+geometry_msgs__msg__Pose pose_msg_pub;
 geometry_msgs__msg__Twist twist_msg;
+
 rcl_subscription_t twist_sub;
+
 rcl_publisher_t twist_pub;
+rcl_publisher_t pose_pub;
+
 rcl_timer_t pid_timer;
 rcl_timer_t pub_timer;
 rcl_timer_t stop_timer;
+
 size_t on_twist_msg = 0;
 size_t callbacks_count = 0;
+
 Robot_t robot;
 
 void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    twist_msg_pub.linear.x = robot.getV();
-    twist_msg_pub.angular.z = robot.getW();
+
+    twist_msg_pub.linear.x = robot.getSpeed();
+    twist_msg_pub.angular.z = robot.getAngularSpeed();
+    //
+    pose_msg_pub.position.x = robot.getPositionX();
+    pose_msg_pub.position.y = robot.getPositionY();
+    pose_msg_pub.orientation.z = robot.getQuaternionZ();
+    pose_msg_pub.orientation.w = robot.getQuaternionW();
+    //
+    //
     rcl_publish(&twist_pub, &twist_msg_pub, NULL);
+    rcl_publish(&pose_pub, &pose_msg_pub, NULL);
   }
 }
 
@@ -51,6 +68,7 @@ void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
     robot.updateSpeedRegulation();
+    robot.updateOdometry(); // temporal
   }
 }
 
@@ -88,6 +106,11 @@ void rclSetup() {
   rclc_publisher_init_default(
       &twist_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
       "velocity");
+
+  // pose_pub
+  rclc_publisher_init_default(
+      &pose_pub, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Pose),
+      "pose");
 
   // twist_sub (-
   rclc_subscription_init_default(
