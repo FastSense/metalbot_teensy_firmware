@@ -1,27 +1,16 @@
 #ifndef MOTOR_97634894045734
 #define MOTOR_97634894045734
+
 #include "Common.hpp"
 #include "Filter.hpp"
 #include "Pid.hpp"
 #include <Encoder.h>
 
 class Motor {
-
-  const int IPR_ = 1836;
-  const float pi_ = 3.141593;
-  const float wheel_diameter_ = 0.195; // 0.133
-  const float k_pwm = 200;
-
-  MotorPins pins_;
-  Encoder encoder_;
-  float deadzone_;
-  int tick_count_;
-  int past_tick_count_;
-  float tick_speed_;
-
 public:
   Regulator pid;   // __DBG!!!!!
-  Filter_t kalman; //__DBG!!!!
+  Filter kalman; //__DBG!!!!
+
   Motor(MotorPins pins, float deadzone = 0, float limit = 1, float kp = 0.2,
         float ki = 2.5, float kd = 0.0015, float dt = 0.01,
         float model_noise = 25.0, float measurement_noise = 0.001)
@@ -77,6 +66,19 @@ public:
     pid.updateRes(getX(0), getX(1), getX(2));
     setSpeed(pid.getRes() * k_pwm);
   }
+
+private:
+  const int IPR_ = 1836;
+  const float pi_ = 3.141593;
+  const float wheel_diameter_ = 0.195; // 0.133
+  const float k_pwm = 200;
+
+  MotorPins pins_;
+  Encoder encoder_;
+  float deadzone_;
+  int tick_count_;
+  int past_tick_count_;
+  float tick_speed_;
 };
 
 #endif /* end of include guard: MOTOR_97634894045734 */
