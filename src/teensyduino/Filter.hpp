@@ -1,25 +1,12 @@
 #ifndef FILTER_4534532
 #define FILTER_4534532
+
 #include "Common.hpp"
 #include <BasicLinearAlgebra.h>
-class Filter_t {
 
-  float dt_;
-  float model_noise_;
-  float measurement_noise_;
-  BLA::Matrix<1> matZ;
-  BLA::Matrix<1> matY;
-  BLA::Matrix<1> matS;
-  BLA::Matrix<3> matK;
-  BLA::Matrix<3> matH;
-  BLA::Matrix<3> matX;
-  BLA::Matrix<3, 3> matE;
-  BLA::Matrix<3, 3> matP;
-  BLA::Matrix<3, 3> matF;
-  BLA::Matrix<3, 3> matQ;
-
+class Filter {
 public:
-  Filter_t(float dt = 0.01, float model_noise = 1, float measurement_noise = 1)
+  Filter(float dt = 0.01, float model_noise = 1, float measurement_noise = 1)
       : dt_(dt), model_noise_(model_noise),
         measurement_noise_(measurement_noise) {
 
@@ -48,6 +35,21 @@ public:
   };
 
   float getX(size_t n) { return matX(n); }; //
+
+private:
+  float dt_;
+  float model_noise_;
+  float measurement_noise_;
+  BLA::Matrix<1> matZ;
+  BLA::Matrix<1> matY;
+  BLA::Matrix<1> matS;
+  BLA::Matrix<3> matK;
+  BLA::Matrix<3> matH;
+  BLA::Matrix<3> matX;
+  BLA::Matrix<3, 3> matE;
+  BLA::Matrix<3, 3> matP;
+  BLA::Matrix<3, 3> matF;
+  BLA::Matrix<3, 3> matQ;
 };
 
 #endif /* end of include guard: FILTER_4534532 */

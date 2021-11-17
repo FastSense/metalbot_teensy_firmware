@@ -15,13 +15,6 @@
 #include "Common.hpp"
 #include "Robot.hpp"
 
-//////////
-#define my_timer_init(timer, period, cb)                                       \
-  rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(period), cb);         \
-  callbacks_count++;
-//////////
-#define my_exe_add_timer(timer) rclc_executor_add_timer(&exe, &timer);
-//////////
 
 rcl_allocator_t allocator;
 rclc_support_t support;
@@ -41,10 +34,11 @@ rcl_timer_t pid_timer;
 rcl_timer_t pub_timer;
 rcl_timer_t stop_timer;
 
-size_t on_twist_msg = 0;
+bool on_twist_msg = false;
+
 size_t callbacks_count = 0;
 
-Robot_t robot;
+Robot robot;
 
 void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
@@ -76,7 +70,7 @@ void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
     if (on_twist_msg)
-      on_twist_msg = FALSE;
+      on_twist_msg = false;
     else {
       // soft stop
       robot.updateTargetWheelsSpeed(0, 0);
@@ -91,7 +85,7 @@ void twist_sub_cb(const void *msgin) {
   const geometry_msgs__msg__Twist *msg =
       (const geometry_msgs__msg__Twist *)msgin;
   robot.updateTargetWheelsSpeed(msg->linear.x, msg->angular.z);
-  on_twist_msg = TRUE; // flag for canceling soft stop
+  on_twist_msg = true; // flag for canceling soft stop
 }
 
 void rclSetup() {
@@ -118,9 +112,15 @@ void rclSetup() {
       "cmd_vel");
   callbacks_count++;
   //           -)
-  my_timer_init(stop_timer, STOP_DT, stop_timer_cb);
-  my_timer_init(pid_timer, PID_DT, pid_timer_cb);
-  my_timer_init(pub_timer, PUB_DT, pub_timer_cb);
+
+  rclc_timer_init_default(&stop_timer, &support, RCL_MS_TO_NS(config::stop_dt), stop_timer_cb);
+  callbacks_count++;
+
+  rclc_timer_init_default(&pid_timer, &support, RCL_MS_TO_NS(config::pid_dt), pid_timer_cb);
+  callbacks_count++;
+
+  rclc_timer_init_default(&pub_timer, &support, RCL_MS_TO_NS(config::pub_dt), pub_timer_cb);
+  callbacks_count++;
 
   // exe (-
   rclc_executor_init(&exe, &support.context, callbacks_count, &allocator);
@@ -128,9 +128,10 @@ void rclSetup() {
    GET CONTROL MSG, CHECK CONNECTION / LOST_MSG, REGULATE, PUBLISH ODOM ETC */
   rclc_executor_add_subscription(&exe, &twist_sub, &twist_msg, &twist_sub_cb,
                                  ON_NEW_DATA);
-  my_exe_add_timer(stop_timer);
-  my_exe_add_timer(pid_timer);
-  my_exe_add_timer(pub_timer);
+
+  rclc_executor_add_timer(&exe, &stop_timer);
+  rclc_executor_add_timer(&exe, &pid_timer);
+  rclc_executor_add_timer(&exe, &pub_timer);
   //     -)
 }
 

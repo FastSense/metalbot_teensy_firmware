@@ -3,21 +3,6 @@
 #include "Common.hpp"
 
 class Regulator {
-
-  float kp;
-  float ki;
-  float kd;
-  float limit;
-
-  float dt = 0.01;
-
-  float tgt_V = 0;
-  float tgt_V_past = 0;
-  float tgt_S = 0;
-  float tgt_A = 0;
-
-  float result = 0;
-
 public:
   Regulator(float limit_ = 1, float kp_ = 0.01, float ki_ = 0.00,
             float kd_ = 0.00)
@@ -25,7 +10,7 @@ public:
 
   void updateTgt(float tgt_V, float xS) {
     tgt_A = (tgt_V - tgt_V_past) / dt;
-    tgt_S += tgt_V * dt + (xS - tgt_S) * FADE; // add fade
+    tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade; // add config::fade
     tgt_V_past = tgt_V;
   };
   void updateRes(float xS, float xV, float xA) {
@@ -40,6 +25,21 @@ public:
     tgt_V_past = 0;
     result = 0;
   }
+
+private:
+  float kp;
+  float ki;
+  float kd;
+  float limit;
+
+  float dt = 0.01;
+
+  float tgt_V = 0;
+  float tgt_V_past = 0;
+  float tgt_S = 0;
+  float tgt_A = 0;
+
+  float result = 0;
 };
 
 #endif /* end of include guard: KF_PID_485367532 */
