@@ -5,10 +5,6 @@
 #include "Pid.hpp"
 #include <Encoder.h>
 
-struct MotorPins {
-  uint8_t pwm, front, back, encA, encB;
-};
-
 class Motor {
 
   const int IPR_ = 1836;

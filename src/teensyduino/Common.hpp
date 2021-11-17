@@ -12,4 +12,8 @@
 
 #define SETUP_DELAY 2000 // ms
 
+struct MotorPins {
+  uint8_t pwm, front, back, encA, encB;
+};
+
 #endif /* end of include guard: COMMON_362942634 */

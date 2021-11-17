@@ -19,8 +19,8 @@ class Regulator {
   float result = 0;
 
 public:
-  Regulator(float limit_ = 1, float kp_ = 0.01, float ki_ = 0.00,
-            float kd_ = 0.00)
+  Regulator(float limit_ = 1, float kp_ = 0.01, float ki_ = 0.0,
+            float kd_ = 0.0)
       : limit(limit_), kp(kp_), ki(ki_), kd(kd_) {}
 
   void updateTgt(float tgt_V, float xS) {
