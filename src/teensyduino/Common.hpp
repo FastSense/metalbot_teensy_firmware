@@ -1,15 +1,20 @@
 #ifndef COMMON_362942634
 #define COMMON_362942634
+
 #include <math.h>
-#define TRUE 1
-#define FALSE 0
+#include <cstdint>
 
-#define PID_DT 10   // ms
-#define STOP_DT 215 // ms
-#define PUB_DT 100  // ms
+struct MotorPins {
+  uint8_t pwm, front, back, encA, encB;
+};
 
-#define FADE 0.01 // %/100
+namespace config {
 
-#define SETUP_DELAY 2000 // ms
+  constexpr uint8_t pid_dt = 10;
+  constexpr uint16_t stop_dt = 215;
+  constexpr uint16_t pub_dt = 100;
+  constexpr uint16_t setup_delay = 2000;
+  constexpr float fade = 0.01f;
+}
 
 #endif /* end of include guard: COMMON_362942634 */

@@ -4,7 +4,7 @@
 #include "Common.hpp"
 #include "Motor.hpp"
 
-class Robot_t {
+class Robot {
 public:
   void start() {
     for (size_t i = 0; i < 4; i++) {
@@ -43,8 +43,8 @@ public:
              base_width_ / 4;
 
     /*test calc of X and Y. In final it must to be calculated from kalman[0]!*/
-    position_X_ += getSpeed() * PID_DT / 1000 * cos(getAngle());
-    position_Y_ += getSpeed() * PID_DT / 1000 * sin(getAngle());
+    position_X_ += getSpeed() * config::pid_dt / 1000 * cos(getAngle());
+    position_Y_ += getSpeed() * config::pid_dt / 1000 * sin(getAngle());
 
     quaternion_Z_ = sin(getAngle() / 2);
     quaternion_W_ = cos(getAngle() / 2);
@@ -72,18 +72,11 @@ public:
 private:
   float motors_targets_[4] = {0, 0, 0, 0};
 
-  Motor motors_[4] = {
-      /* pwm, front, back, encA, encB */
-      // /* metal: */
-      // Motor({8, 10, 9, 1, 0}),   // A
-      // Motor({11, 13, 12, 2, 3}), // B
-      // Motor({14, 18, 15, 5, 4}), // C
-      // Motor({19, 23, 22, 6, 7})  // D
-      /* fanera: */
-      Motor({14, 15, 18, 5, 4}), // A
-      Motor({19, 22, 23, 6, 7}), // B
-      Motor({8, 10, 9, 3, 2}),   // C
-      Motor({11, 13, 12, 0, 1}), // D
+  Motor motors_ = {
+      Motor({14, 15, 18, 5, 4}),
+      Motor({19, 22, 23, 6, 7}),
+      Motor({8, 10, 9, 3, 2}),
+      Motor({11, 13, 12, 0, 1}),
   };
 
   const float base_width_ = 0.44;
