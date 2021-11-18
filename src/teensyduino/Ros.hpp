@@ -14,7 +14,6 @@
 
 #include "Common.hpp"
 #include "Robot.hpp"
-#include "mcr.hpp"
 
 rcl_allocator_t allocator;
 rclc_support_t support;
@@ -40,53 +39,54 @@ size_t callbacks_count = 0;
 
 Robot robot;
 
-void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
-  RCLC_UNUSED(last_call_time);
-  if (timer != NULL) {
-
-    twist_msg_pub.linear.x = robot.getSpeed();
-    twist_msg_pub.angular.z = robot.getAngularSpeed();
-    //
-    pose_msg_pub.position.x = robot.getPositionX();
-    pose_msg_pub.position.y = robot.getPositionY();
-    pose_msg_pub.orientation.z = robot.getQuaternionZ();
-    pose_msg_pub.orientation.w = robot.getQuaternionW();
-    //
-    //
-    rcl_publish(&twist_pub, &twist_msg_pub, NULL);
-    rcl_publish(&pose_pub, &pose_msg_pub, NULL);
-  }
-}
-
-void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
-  RCLC_UNUSED(last_call_time);
-  if (timer != NULL) {
-    robot.updateSpeedRegulation();
-    robot.updateOdometry(); // temporal
-  }
-}
-
-void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
-  RCLC_UNUSED(last_call_time);
-  if (timer != NULL) {
-    if (on_twist_msg)
-      on_twist_msg = false;
-    else {
-      // soft stop
-      robot.updateTargetWheelsSpeed(0, 0);
-      // Ping the agent
-      if (RMW_RET_OK != rmw_uros_ping_agent(/*att period*/ 50, /*att*/ 2))
-        robot.hardStopLoop(); // micro-ROS Agent is not available -> stop motors
-    }
-  }
-}
-
-void twist_sub_cb(const void *msgin) {
-  const geometry_msgs__msg__Twist *msg =
-      (const geometry_msgs__msg__Twist *)msgin;
-  robot.updateTargetWheelsSpeed(msg->linear.x, msg->angular.z);
-  on_twist_msg = true; // flag for canceling soft stop
-}
+// void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
+//   RCLC_UNUSED(last_call_time);
+//   if (timer != NULL) {
+//
+//     twist_msg_pub.linear.x = robot.getSpeed();
+//     twist_msg_pub.angular.z = robot.getAngularSpeed();
+//     //
+//     pose_msg_pub.position.x = robot.getPositionX();
+//     pose_msg_pub.position.y = robot.getPositionY();
+//     pose_msg_pub.orientation.z = robot.getQuaternionZ();
+//     pose_msg_pub.orientation.w = robot.getQuaternionW();
+//     //
+//     //
+//     rcl_publish(&twist_pub, &twist_msg_pub, NULL);
+//     rcl_publish(&pose_pub, &pose_msg_pub, NULL);
+//   }
+// }
+//
+// void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
+//   RCLC_UNUSED(last_call_time);
+//   if (timer != NULL) {
+//     robot.updateSpeedRegulation();
+//     robot.updateOdometry(); // temporal
+//   }
+// }
+//
+// void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
+//   RCLC_UNUSED(last_call_time);
+//   if (timer != NULL) {
+//     if (on_twist_msg)
+//       on_twist_msg = false;
+//     else {
+//       // soft stop
+//       robot.updateTargetWheelsSpeed(0, 0);
+//       // Ping the agent
+//       if (RMW_RET_OK != rmw_uros_ping_agent(/*att period*/ 50, /*att*/ 2))
+//         robot.hardStopLoop(); // micro-ROS Agent is not available -> stop
+//         motors
+//     }
+//   }
+// }
+//
+// void twist_sub_cb(const void *msgin) {
+//   const geometry_msgs__msg__Twist *msg =
+//       (const geometry_msgs__msg__Twist *)msgin;
+//   robot.updateTargetWheelsSpeed(msg->linear.x, msg->angular.z);
+//   on_twist_msg = true; // flag for canceling soft stop
+// }
 
 void rclSetup() {
 

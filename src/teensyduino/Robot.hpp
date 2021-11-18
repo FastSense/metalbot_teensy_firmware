@@ -72,7 +72,7 @@ public:
 private:
   float motors_targets_[4] = {0, 0, 0, 0};
 
-  Motor motors_ = {
+  Motor motors_[4] = {
       Motor({14, 15, 18, 5, 4}),
       Motor({19, 22, 23, 6, 7}),
       Motor({8, 10, 9, 3, 2}),
