@@ -1,12 +1,13 @@
-#ifndef KF_PID_485367532
-#define KF_PID_485367532
+#pragma once
+
 #include "Common.hpp"
 
 class Regulator {
 public:
-  Regulator(float limit_ = 1, float kp_ = 0.01, float ki_ = 0.0,
-            float kd_ = 0.0)
-      : limit(limit_), kp(kp_), ki(ki_), kd(kd_) {}
+  Regulator(float limit_ = 0, float kp_ = 0.0, float ki_ = 0.0, float kd_ = 0.0)
+      : limit(limit_), kp(kp_), ki(ki_), kd(kd_) {
+    reset();
+  }
 
   void updateTgt(float tgt_V, float xS) {
     tgt_A = (tgt_V - tgt_V_past) / dt;
@@ -32,14 +33,12 @@ private:
   float kd;
   float limit;
 
-  float dt = 0.01;
+  float dt = 0.01f;
 
-  float tgt_V = 0;
-  float tgt_V_past = 0;
-  float tgt_S = 0;
-  float tgt_A = 0;
+  float tgt_S;
+  float tgt_V;
+  float tgt_A;
+  float tgt_V_past;
 
-  float result = 0;
+  float result;
 };
-
-#endif /* end of include guard: KF_PID_485367532 */

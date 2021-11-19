@@ -1,5 +1,4 @@
-#ifndef MOTOR_97634894045734
-#define MOTOR_97634894045734
+#pragma once
 
 #include "Common.hpp"
 #include "Filter.hpp"
@@ -8,19 +7,20 @@
 
 class Motor {
 public:
-  Regulator pid;   // __DBG!!!!!
-  Filter kalman; //__DBG!!!!
+  Regulator pid; // __DBG
+  Filter kalman; //__DBG
 
-  Motor(MotorPins pins, float deadzone = 0, float limit = 1, float kp = 0.2,
-        float ki = 2.5, float kd = 0.0015, float dt = 0.01,
+  Motor(MotorPins pins, float deadzone = 0, float limit = 1, float kp = 0.35,
+        float ki = 2.4, float kd = 0.001, float dt = 0.01,
         float model_noise = 25.0, float measurement_noise = 0.001)
       : pins_(pins), encoder_(pins.encA, pins.encB), deadzone_(deadzone),
-        pid(limit, kp, ki, kd), kalman(dt, model_noise, measurement_noise){};
+        pid(limit, kp, ki, kd), kalman(dt, model_noise, measurement_noise),
+        ipr_(config::ipr), pi_(config::pi),
+        wheel_diameter_(config::wheel_diameter), k_pwm_(config::k_pwm){};
 
   void start() {
     pinMode(pins_.pwm, OUTPUT);
-    // analogWriteFrequency(pins_.pwm, 585937.5);
-    analogWriteFrequency(pins_.pwm, 36621); // __DBG
+    analogWriteFrequency(pins_.pwm, config::pwm_frequency);
     pinMode(pins_.front, OUTPUT);
     pinMode(pins_.back, OUTPUT);
     reset();
@@ -49,9 +49,9 @@ public:
       digitalWrite(pins_.back, LOW);
     }
   }
-  //вызывать периодически для корректной работы фильтра:
+  //вызывать только периодически для корректной работы фильтра:
   void updateSensor() {
-    kalman.update(getTickCount() * pi_ * wheel_diameter_ / IPR_);
+    kalman.update(getTickCount() * pi_ * wheel_diameter_ / ipr_);
   }
 
   float getX(size_t n) { return kalman.getX(n); }
@@ -61,17 +61,17 @@ public:
   void resetTick() { encoder_.write(0); }
 
   void updateSpeed(double target) {
-    pid.updateTgt(target, getX(0));
+    pid.updateTgt(target, getX(KF_distance));
     updateSensor();
-    pid.updateRes(getX(0), getX(1), getX(2));
-    setSpeed(pid.getRes() * k_pwm);
+    pid.updateRes(getX(KF_distance), getX(KF_speed), getX(KF_acceleration));
+    setSpeed(pid.getRes() * k_pwm_);
   }
 
 private:
-  const int IPR_ = 1836;
-  const float pi_ = 3.141593;
-  const float wheel_diameter_ = 0.195; // 0.133
-  const float k_pwm = 200;
+  int ipr_;
+  float pi_;
+  float wheel_diameter_;
+  float k_pwm_;
 
   MotorPins pins_;
   Encoder encoder_;
@@ -80,5 +80,3 @@ private:
   int past_tick_count_;
   float tick_speed_;
 };
-
-#endif /* end of include guard: MOTOR_97634894045734 */

@@ -1,46 +1,44 @@
-#ifndef ROBOT_247502943
-#define ROBOT_247502943
+#pragma once
 
 #include "Common.hpp"
 #include "Motor.hpp"
 
-class Robot {
+template <uint8_t N> class Robot {
 public:
+  Robot(float base_width) : base_width_(base_width) {}
   void start() {
-    for (size_t i = 0; i < 4; i++) {
+    for (size_t i = 0; i < N; i++) {
       motors_[i].start();
     }
   }
   void reset() {
-    for (size_t i = 0; i < 4; i++) {
+    for (size_t i = 0; i < N; i++) {
       motors_[i].reset();
     }
   }
 
   void updateTargetWheelsSpeed(double linear, double angular) {
-    motors_targets_[0] = motors_targets_[2] =
-        linear - angular * base_width_half_;
-    motors_targets_[1] = motors_targets_[3] =
-        linear + angular * base_width_half_;
+    motors_targets_[FL] = motors_targets_[RL] = linear - angular * base_width_;
+    motors_targets_[FR] = motors_targets_[RR] = linear + angular * base_width_;
   }
 
   void updateSpeedRegulation() {
-    for (size_t i = 0; i < 4; i++)
+    for (size_t i = 0; i < N; i++)
       motors_[i].updateSpeed(motors_targets_[i]);
   }
   void updateOdometry() {
 
-    speed_ = (motors_[0].getX(1) + motors_[1].getX(1) + motors_[2].getX(1) +
-              motors_[3].getX(1)) /
-             4;
+    speed_ = (motors_[FL].getX(KF_speed) + motors_[FR].getX(KF_speed) +
+              motors_[RL].getX(KF_speed) + motors_[RR].getX(KF_speed)) /
+             N;
 
-    angular_speed_ = (motors_[1].getX(1) - motors_[0].getX(1) +
-                      motors_[3].getX(1) - motors_[2].getX(1)) /
-                     base_width_ / 4;
+    angular_speed_ = (motors_[FR].getX(KF_speed) - motors_[FL].getX(KF_speed) +
+                      motors_[RR].getX(KF_speed) - motors_[RL].getX(KF_speed)) /
+                     base_width_ / N;
 
-    angle_ = (motors_[1].getX(0) - motors_[0].getX(0) + motors_[3].getX(0) -
-              motors_[2].getX(0)) /
-             base_width_ / 4;
+    angle_ = (motors_[FR].getX(KF_distance) - motors_[FL].getX(KF_distance) +
+              motors_[RR].getX(KF_distance) - motors_[RL].getX(KF_distance)) /
+             base_width_ / N;
 
     /*test calc of X and Y. In final it must to be calculated from kalman[0]!*/
     position_X_ += getSpeed() * config::pid_dt / 1000 * cos(getAngle());
@@ -50,9 +48,9 @@ public:
     quaternion_W_ = cos(getAngle() / 2);
   }
 
-  void hardStopLoop() { /// when connection lost
+  void hardStopLoop() { /// when connection lost after ping
     while (1) {
-      for (size_t i = 0; i < 4; i++)
+      for (size_t i = 0; i < N; i++)
         motors_[i].setSpeed(0);
       delay(10);
     }
@@ -70,17 +68,22 @@ public:
   float getPositionY() { return position_Y_; }
 
 private:
-  float motors_targets_[4] = {0, 0, 0, 0};
+  float motors_targets_[N] = {0, 0, 0, 0};
 
-  Motor motors_[4] = {
-      Motor({14, 15, 18, 5, 4}),
-      Motor({19, 22, 23, 6, 7}),
-      Motor({8, 10, 9, 3, 2}),
-      Motor({11, 13, 12, 0, 1}),
+  Motor motors_[N] = {
+      Motor({8, 10, 9, 1, 0}),   // FL
+      Motor({11, 13, 12, 2, 3}), // FR
+      Motor({14, 18, 15, 5, 4}), // RL
+      Motor({19, 23, 22, 6, 7}), // RR
+
+      // Motor({14, 15, 18, 5, 4}),
+      // Motor({19, 22, 23, 6, 7}),
+      // Motor({8, 10, 9, 3, 2}),
+      // Motor({11, 13, 12, 0, 1}),
   };
 
-  const float base_width_ = 0.44;
-  const float base_width_half_ = base_width_ / 2;
+  float base_width_;
+
   float speed_ = 0;
   float angular_speed_ = 0;
   float position_X_ = 0;
@@ -89,5 +92,3 @@ private:
   float quaternion_Z_ = 0;
   float quaternion_W_ = 1;
 };
-
-#endif /* end of include guard: ROBOT_247502943 */

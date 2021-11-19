@@ -1,5 +1,4 @@
-#ifndef FILTER_4534532
-#define FILTER_4534532
+#pragma once
 
 #include "Common.hpp"
 #include <BasicLinearAlgebra.h>
@@ -51,5 +50,3 @@ private:
   BLA::Matrix<3, 3> matF;
   BLA::Matrix<3, 3> matQ;
 };
-
-#endif /* end of include guard: FILTER_4534532 */
