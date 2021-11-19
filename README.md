@@ -10,14 +10,14 @@ https://www.pjrc.com/teensy/td_download.html
 
 ### Install libraries
 #### Micro-ROS:
-  Download zip archive of foxy branch: https://github.com/micro-ROS/micro_ros_arduino/tree/foxy
-  Include it in your project using Sketch -> Include library -> Add .ZIP Library...
-  And Setup platform:
-      ```bash
-      export ARDUINO_PATH=[Your Arduino + Teensyduino path]
-      cd $ARDUINO_PATH/hardware/teensy/avr/
-      curl https://raw.githubusercontent.com/micro-ROS/micro_ros_arduino/foxy/extras/patching_boards/platform_teensy.txt > platform.txt
-      ```
+  - Download zip archive of foxy branch: https://github.com/micro-ROS/micro_ros_arduino/tree/foxy
+  - Include it in your project using Sketch -> Include library -> Add .ZIP Library...
+  - And Setup platform:
+  ```bash
+  export ARDUINO_PATH=[Your Arduino + Teensyduino path]
+  cd $ARDUINO_PATH/hardware/teensy/avr/
+  curl https://raw.githubusercontent.com/micro-ROS/micro_ros_arduino/foxy/extras/patching_boards/platform_teensy.txt > platform.txt
+  ```
 #### Arduino libraries:
  Tools -> Manage Libraries...
   - BasicLinearAlgebra (Tom Stewart)
@@ -29,8 +29,8 @@ https://www.pjrc.com/teensy/td_download.html
 
 ### Upload firmware
   - Use scp to transfer firmware
-  - Use tycmd to upload
+  - Use tycmd to upload:
   ```bash
   sudo tycmd upload <filename.hex>
-  (https://koromix.dev/tytools#tycmd_upload)
+  # koromix.dev/tytools#tycmd_upload
   ```
