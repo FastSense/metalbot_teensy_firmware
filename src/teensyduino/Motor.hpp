@@ -9,7 +9,7 @@ class Motor {
 public:
   Regulator pid; // __DBG
   Filter kalman; //__DBG
-
+  /*TODO: init obj-s from main*/
   Motor(MotorPins pins, float deadzone = 0, float limit = 1, float kp = 0.35,
         float ki = 2.4, float kd = 0.001, float dt = 0.01,
         float model_noise = 25.0, float measurement_noise = 0.001)

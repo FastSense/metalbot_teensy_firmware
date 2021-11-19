@@ -75,7 +75,7 @@ void setup() {
 
   robot.start();
 
-  /* MICRO_ROS INITIALIZATIONS:*/
+  /* MICRO_ROS OBJ-S INIT: */
   micro_ros_wpapper.initPub(&velocity_pub, GET_SUPPORT(Twist), "velocity");
   micro_ros_wpapper.initPub(&pose_pub, GET_SUPPORT(Pose), "pose");
 
@@ -87,7 +87,7 @@ void setup() {
 
   micro_ros_wpapper.initExecutor();
 
-  /* PRIORITY DETERMINED SEQUENCE OF ADDITIONS:*/
+  /* PRIORITY DETERMINED SEQUENCE OF ADDITIONS: */
   micro_ros_wpapper.addSub(&cmd_vel_sub, cmd_vel_sub_cb, cmd_vel_msg);
 
   micro_ros_wpapper.addTimer(&stop_timer);

@@ -10,7 +10,7 @@
 
 #include <geometry_msgs/msg/pose.h>
 #include <geometry_msgs/msg/twist.h>
-
+/*TODO: ??? */
 #define GET_SUPPORT(item) ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, item)
 
 class MicroRosWrapper {
@@ -31,7 +31,7 @@ public:
     rcl_publish(pub, msg, NULL);
   }
 
-  /* MICRO_ROS INITIALIZATIONS:*/
+  /* MICRO_ROS OBJ-S INIT: */
   template <class supportT, class nameT> /////////
   void initPub(rcl_publisher_t *pub, supportT sup, nameT name) {
     rclc_publisher_init_default(pub, &node, sup, name);
@@ -54,7 +54,7 @@ public:
                        &allocator);
   }
 
-  /* PRIORITY DETERMINED SEQUENCE OF ADDITIONS:*/
+  /* PRIORITY DETERMINED SEQUENCE OF ADDITIONS: */
   template <class Callable, class msgT> /////////
   void addSub(rcl_subscription_t *sub, Callable cb, msgT msg) {
     rclc_executor_add_subscription(&executor, sub, &msg, cb, ON_NEW_DATA);

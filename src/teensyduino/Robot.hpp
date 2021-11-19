@@ -40,7 +40,7 @@ public:
               motors_[RR].getX(KF_distance) - motors_[RL].getX(KF_distance)) /
              base_width_ / N;
 
-    /*test calc of X and Y. In final it must to be calculated from kalman[0]!*/
+    /*TODO: positon from kalman[KF_distance]*/
     position_X_ += getSpeed() * config::pid_dt / 1000 * cos(getAngle());
     position_Y_ += getSpeed() * config::pid_dt / 1000 * sin(getAngle());
 
@@ -70,16 +70,17 @@ public:
 private:
   float motors_targets_[N] = {0, 0, 0, 0};
 
+  /*TODO: move pins to config */
   Motor motors_[N] = {
-      Motor({8, 10, 9, 1, 0}),   // FL
-      Motor({11, 13, 12, 2, 3}), // FR
-      Motor({14, 18, 15, 5, 4}), // RL
-      Motor({19, 23, 22, 6, 7}), // RR
+      // Motor({8, 10, 9, 1, 0}),   // FL
+      // Motor({11, 13, 12, 2, 3}), // FR
+      // Motor({14, 18, 15, 5, 4}), // RL
+      // Motor({19, 23, 22, 6, 7}), // RR
 
-      // Motor({14, 15, 18, 5, 4}),
-      // Motor({19, 22, 23, 6, 7}),
-      // Motor({8, 10, 9, 3, 2}),
-      // Motor({11, 13, 12, 0, 1}),
+      Motor({14, 15, 18, 5, 4}), // FL
+      Motor({19, 22, 23, 6, 7}), // FR
+      Motor({8, 10, 9, 3, 2}),   // RL
+      Motor({11, 13, 12, 0, 1}), // RR
   };
 
   float base_width_;
