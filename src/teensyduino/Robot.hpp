@@ -18,8 +18,8 @@ public:
   }
 
   void updateTargetWheelsSpeed(double linear, double angular) {
-    motors_targets_[FL] = motors_targets_[RL] = linear - angular * base_width_;
-    motors_targets_[FR] = motors_targets_[RR] = linear + angular * base_width_;
+    motors_targets_[L_wheel] = linear - angular * base_width_ / 2;
+    motors_targets_[R_wheel] = linear + angular * base_width_ / 2;
   }
 
   void updateSpeedRegulation() {
@@ -28,17 +28,17 @@ public:
   }
   void updateOdometry() {
 
-    speed_ = (motors_[FL].getX(KF_speed) + motors_[FR].getX(KF_speed) +
-              motors_[RL].getX(KF_speed) + motors_[RR].getX(KF_speed)) /
+    speed_ = (motors_[L_wheel].getX(KF_speed) + //
+              motors_[R_wheel].getX(KF_speed)) /
              N;
 
-    angular_speed_ = (motors_[FR].getX(KF_speed) - motors_[FL].getX(KF_speed) +
-                      motors_[RR].getX(KF_speed) - motors_[RL].getX(KF_speed)) /
-                     base_width_ / N;
+    angular_speed_ = (motors_[R_wheel].getX(KF_speed) - //
+                      motors_[L_wheel].getX(KF_speed)) /
+                     base_width_;
 
-    angle_ = (motors_[FR].getX(KF_distance) - motors_[FL].getX(KF_distance) +
-              motors_[RR].getX(KF_distance) - motors_[RL].getX(KF_distance)) /
-             base_width_ / N;
+    angle_ = (motors_[R_wheel].getX(KF_distance) -
+              motors_[L_wheel].getX(KF_distance)) /
+             base_width_;
 
     /*TODO: positon from kalman[KF_distance]*/
     position_X_ += getSpeed() * config::pid_dt / 1000 * cos(getAngle());
@@ -68,19 +68,16 @@ public:
   float getPositionY() { return position_Y_; }
 
 private:
-  float motors_targets_[N] = {0, 0, 0, 0};
+  float motors_targets_[N] = {0, 0};
 
   /*TODO: move pins to config */
   Motor motors_[N] = {
-      // Motor({8, 10, 9, 1, 0}),   // FL
-      // Motor({11, 13, 12, 2, 3}), // FR
-      // Motor({14, 18, 15, 5, 4}), // RL
-      // Motor({19, 23, 22, 6, 7}), // RR
+      Motor({14, 15, 18, 5, 4}), // L
+      Motor({19, 22, 23, 6, 7}), // R
 
-      Motor({14, 15, 18, 5, 4}), // FL
-      Motor({19, 22, 23, 6, 7}), // FR
-      Motor({8, 10, 9, 3, 2}),   // RL
-      Motor({11, 13, 12, 0, 1}), // RR
+      // Motor({8, 10, 9, 1, 0}),   // L
+      // Motor({11, 13, 12, 2, 3}), // R
+
   };
 
   float base_width_;

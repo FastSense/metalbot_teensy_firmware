@@ -7,7 +7,8 @@ struct MotorPins {
   uint8_t pwm, front, back, encA, encB;
 };
 
-enum Wheels4 { FL, FR, RL, RR };
+enum Wheels2 { L_wheel, R_wheel };
+// enum Wheels4 { FL, FR, RL, RR };
 enum kalmanX { KF_distance, KF_speed, KF_acceleration };
 
 namespace config {
@@ -19,8 +20,8 @@ constexpr float k_pwm = 200.0f;
 
 constexpr float pwm_frequency = 36621.0f; // 585937.5f
 
-constexpr uint8_t motors_count = 4;
-constexpr float base_width = 0.44f;
+constexpr uint8_t motors_count = 2; // 4
+constexpr float base_width = 0.42f;
 
 constexpr uint8_t pid_dt = 10;
 constexpr uint16_t stop_dt = 115;
