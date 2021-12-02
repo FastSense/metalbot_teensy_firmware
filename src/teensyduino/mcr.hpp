@@ -11,7 +11,6 @@
 #include <geometry_msgs/msg/pose.h>
 #include <geometry_msgs/msg/twist.h>
 /*TODO: ??? */
-#define GET_SUPPORT(item) ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, item)
 
 class MicroRosWrapper {
 public:

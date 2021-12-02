@@ -4,19 +4,22 @@
 
 class Regulator {
 public:
-  Regulator(float limit_ = 0, float kp_ = 0.0, float ki_ = 0.0, float kd_ = 0.0)
-      : limit(limit_), kp(kp_), ki(ki_), kd(kd_) {
+  Regulator(float limit_, float kp_, float ki_, float kd_, float dt_)
+      : limit(limit_), kp(kp_), ki(ki_), kd(kd_), dt(dt_) {
     reset();
   }
 
   void updateTgt(float tgt_V, float xS) {
     tgt_A = (tgt_V - tgt_V_past) / dt;
-    tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade; // add config::fade
+    tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade;
+
     tgt_V_past = tgt_V;
-  };
+  }
+
   void updateRes(float xS, float xV, float xA) {
     result = kp * (tgt_V - xV) + ki * (tgt_S - xS) + kd * (tgt_A - xA);
   }
+
   float getRes() { return result; }
 
   void reset() {
@@ -28,12 +31,11 @@ public:
   }
 
 private:
+  float limit;
   float kp;
   float ki;
   float kd;
-  float limit;
-
-  float dt = 0.01f;
+  float dt;
 
   float tgt_S;
   float tgt_V;

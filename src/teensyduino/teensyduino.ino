@@ -76,10 +76,15 @@ void setup() {
   robot.start();
 
   /* MICRO_ROS OBJ-S INIT: */
-  micro_ros_wpapper.initPub(&velocity_pub, GET_SUPPORT(Twist), "velocity");
-  micro_ros_wpapper.initPub(&pose_pub, GET_SUPPORT(Pose), "pose");
+  micro_ros_wpapper.initPub(
+      &velocity_pub, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      "velocity");
+  micro_ros_wpapper.initPub(
+      &pose_pub, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Pose), "pose");
 
-  micro_ros_wpapper.initSub(&cmd_vel_sub, GET_SUPPORT(Twist), "cmd_vel");
+  micro_ros_wpapper.initSub(
+      &cmd_vel_sub, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      "cmd_vel");
 
   micro_ros_wpapper.initTimer(stop_timer_cb, &stop_timer, config::stop_dt);
   micro_ros_wpapper.initTimer(pid_timer_cb, &pid_timer, config::pid_dt);
