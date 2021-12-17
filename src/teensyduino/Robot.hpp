@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Battery.hpp"
 #include "Common.hpp"
 #include "Motor.hpp"
 
@@ -7,6 +8,7 @@ template <uint8_t N> class Robot {
 public:
   Robot(float base_width) : base_width_(base_width) {}
   void start() {
+    battery::start();
     for (size_t i = 0; i < N; i++) {
       motors_[i].start();
     }
@@ -66,6 +68,10 @@ public:
 
   float getPositionX() { return position_X_; }
   float getPositionY() { return position_Y_; }
+
+  float getBatteryVoltage() { return battery::getVoltage(); }
+  float getBatteryCurrent() { return battery::getCurrent(); }
+  float getBatteryPercentage() { return battery::getPercentage(); }
 
 private:
   float motors_targets_[N] = {0, 0};
