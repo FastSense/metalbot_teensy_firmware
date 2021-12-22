@@ -8,8 +8,8 @@
 class Motor {
 public:
   /*TODO: init obj-s from main*/
-  Motor(MotorPins pins, float deadzone = 2, float limit = 20, float kp = 0.3,
-        float ki = 2.8, float kd = 0.005, float dt = 0.01,
+  Motor(MotorPins pins, float deadzone = 2, float limit = 20, float kp = 0.0,
+        float ki = 2.5, float kd = 0.0, float dt = 0.01,
         float model_noise = 25.0, float measurement_noise = 0.001)
       : pins_(pins), encoder_(pins.encA, pins.encB), deadzone_(deadzone),
         pid(limit, kp, ki, kd, dt), kalman(dt, model_noise, measurement_noise),

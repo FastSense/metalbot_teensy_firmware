@@ -9,6 +9,7 @@ MicroRosWrapper MRW(config::ros_domain_id);
 
 geometry_msgs__msg__Twist cmd_vel_msg;
 sensor_msgs__msg__BatteryState battery_state_msg;
+sensor_msgs__msg__Temperature temperature_msg;
 geometry_msgs__msg__Twist velocity_msg;
 geometry_msgs__msg__Pose pose_msg;
 
@@ -16,6 +17,7 @@ rcl_subscription_t cmd_vel_sub;
 rcl_publisher_t battery_state_pub;
 rcl_publisher_t velocity_pub;
 rcl_publisher_t pose_pub;
+rcl_publisher_t temperature_pub;
 
 rcl_timer_t stop_timer;
 rcl_timer_t pid_timer;
@@ -36,10 +38,12 @@ void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
     battery_state_msg.voltage = robot.getBatteryVoltage();
     battery_state_msg.current = robot.getBatteryCurrent();
     battery_state_msg.percentage = robot.getBatteryPercentage();
+    temperature_msg.temperature = robot.getTemperature();
     //публикация сообщений
     MRW.publish(&velocity_pub, &velocity_msg);
     MRW.publish(&pose_pub, &pose_msg);
     MRW.publish(&battery_state_pub, &battery_state_msg);
+    MRW.publish(&temperature_pub, &temperature_msg);
   }
 }
 
@@ -91,6 +95,10 @@ void setup() {
   MRW.initPub(&battery_state_pub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, BatteryState),
               "battery_state");
+
+  MRW.initPub(&temperature_pub,
+              ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Temperature),
+              "temperature");
 
   MRW.initSub(&cmd_vel_sub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),

@@ -11,6 +11,7 @@
 #include <geometry_msgs/msg/pose.h>
 #include <geometry_msgs/msg/twist.h>
 #include <sensor_msgs/msg/battery_state.h>
+#include <sensor_msgs/msg/temperature.h>
 
 class MicroRosWrapper {
 public:
