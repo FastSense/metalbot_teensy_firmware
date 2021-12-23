@@ -9,8 +9,8 @@ INA233 IC1(0x40);
 
 constexpr float R_shunt = 0.002;
 constexpr float I_max = 20;
-constexpr float min_voltage = 18.0;
-constexpr float max_voltage = 24.0;
+constexpr float min_voltage = 17.0;
+constexpr float max_voltage = 25.2;
 
 void start() {
   uint16_t CAL = 0;
@@ -29,8 +29,10 @@ void start() {
 }
 
 float getVoltage() { return IC1.getBusVoltage_V(); }
+float getShuntVoltage() { return IC1.getShuntVoltage_mV(); }
 
-float getCurrent() { return IC1.getCurrent_mA() / 1000; }
+// float getCurrent() { return IC1.getCurrent_mA() / 1000; }
+float getCurrent() { return getShuntVoltage() / R_shunt / 1000; } // DBG
 
 float getPercentage() {
   return (getVoltage() - min_voltage) / (max_voltage - min_voltage);
