@@ -8,7 +8,7 @@ namespace battery {
 INA233 IC1(0x40);
 
 constexpr float R_shunt = 0.002;
-constexpr float I_max = 20;
+constexpr float I_max = 2;
 constexpr float min_voltage = 17.0;
 constexpr float max_voltage = 25.2;
 

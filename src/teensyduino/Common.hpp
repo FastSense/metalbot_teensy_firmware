@@ -27,6 +27,6 @@ constexpr uint8_t pid_dt = 10;
 // constexpr uint16_t stop_dt = 115;
 constexpr uint16_t stop_dt = 205; //__DBG
 constexpr uint16_t pub_dt = 200;  // 100
-constexpr uint16_t setup_delay = 2000;
-constexpr float fade = 0.007f;
+constexpr uint16_t setup_delay = 3000;
+constexpr float fade = 0.01f;
 } // namespace config
