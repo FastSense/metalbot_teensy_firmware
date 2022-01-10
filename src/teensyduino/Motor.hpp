@@ -7,16 +7,23 @@
 
 class Motor {
 public:
-  Regulator pid; // __DBG
-  Filter kalman; //__DBG
   /*TODO: init obj-s from main*/
-  Motor(MotorPins pins, float deadzone = 0, float limit = 1, float kp = 0.35,
-        float ki = 2.4, float kd = 0.001, float dt = 0.01,
+  Motor(MotorPins pins,
+        // DBG
+        float deadzone = 1,
+        //
+        float i_max = 0.1, float p_max = 0.3, float d_max = 0.18,
+        //
+        float kp = 0.02, float ki = 2.4, float kd = 0.01,
+        //
+        float dt = 0.01,
+        //
         float model_noise = 25.0, float measurement_noise = 0.001)
       : pins_(pins), encoder_(pins.encA, pins.encB), deadzone_(deadzone),
-        pid(limit, kp, ki, kd), kalman(dt, model_noise, measurement_noise),
-        ipr_(config::ipr), pi_(config::pi),
-        wheel_diameter_(config::wheel_diameter), k_pwm_(config::k_pwm){};
+        pid(p_max, i_max, d_max, kp, ki, kd, dt),
+        kalman(dt, model_noise, measurement_noise), ipr_(config::ipr),
+        pi_(config::pi), wheel_diameter_(config::wheel_diameter),
+        k_pwm_(config::k_pwm){};
 
   void start() {
     pinMode(pins_.pwm, OUTPUT);
@@ -68,15 +75,13 @@ public:
   }
 
 private:
+  MotorPins pins_;
+  Encoder encoder_;
+  float deadzone_;
+  Regulator pid; // __DBG
+  Filter kalman; //__DBG
   int ipr_;
   float pi_;
   float wheel_diameter_;
   float k_pwm_;
-
-  MotorPins pins_;
-  Encoder encoder_;
-  float deadzone_;
-  int tick_count_;
-  int past_tick_count_;
-  float tick_speed_;
 };
