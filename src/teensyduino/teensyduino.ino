@@ -83,7 +83,7 @@ void setup() {
   // TODO: ожидание запуска агента на хосте
 
   robot.start();
-  // TODO: иниц-ия[освобожение] объектов для функции перезапуска без tycmd
+  // TODO: иниц-ия[+освобожение] объектов для функции перезапуска без tycmd
 
   /* MICRO_ROS OBJ-S INIT: */
   MRW.initPub(&velocity_pub,

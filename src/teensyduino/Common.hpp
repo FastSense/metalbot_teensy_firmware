@@ -12,7 +12,7 @@ enum Wheels2 { L_wheel, R_wheel };
 enum kalmanX { KF_distance, KF_speed, KF_acceleration };
 
 namespace config {
-constexpr size_t ros_domain_id = 80; // 1(81)
+constexpr size_t ros_domain_id = 81; // {80,81}
 constexpr int ipr = 1836;
 constexpr float pi = 3.141593f;
 constexpr float wheel_diameter = 0.195f; // 0.133f

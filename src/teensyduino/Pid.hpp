@@ -15,8 +15,8 @@ public:
     tgt_A = (tgt_V - tgt_V_past) / dt;
     tgt_V_past = tgt_V;
 
-    // tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade;
-    tgt_S += tgt_V * dt; // DBG
+    tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade;
+    // tgt_S += tgt_V * dt; // DBG
 
     // LIMITATION INTEGRAL
     if (tgt_S > xS + i_max)

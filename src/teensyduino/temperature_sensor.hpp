@@ -17,11 +17,14 @@ void start() {
   sensors.setResolution(tempDeviceAddress,
                         precision); // установка низшего разрешения для
                                     // обеспечения скорости чтения < 100мс
+  sensors.setWaitForConversion(false); // makes it async
+  sensors.requestTemperatures();       // Send the command to get temperatures
 }
 
 float getTemperature() {
+  float temp = sensors.getTempCByIndex(0);
   sensors.requestTemperatures(); // Send the command to get temperatures
-  return sensors.getTempC(tempDeviceAddress);
+  return temp;
 }
 
 } // namespace TemperatureSensor
