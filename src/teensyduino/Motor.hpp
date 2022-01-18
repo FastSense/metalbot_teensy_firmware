@@ -12,9 +12,9 @@ public:
         // DBG
         float deadzone = 1,
         //
-        float i_max = 0.1, float p_max = 0.3, float d_max = 0.18,
+        float i_max = 0.15, float p_max = 0.3, float d_max = 0.12,
         //
-        float kp = 0.02, float ki = 2.4, float kd = 0.01,
+        float kp = 0.015, float ki = 2.1, float kd = 0.005,
         //
         float dt = 0.01,
         //
@@ -25,27 +25,28 @@ public:
         pi_(config::pi), wheel_diameter_(config::wheel_diameter),
         k_pwm_(config::k_pwm){};
 
-  void start() {
+  void init() {
     pinMode(pins_.pwm, OUTPUT);
-    analogWriteFrequency(pins_.pwm, config::pwm_frequency);
     pinMode(pins_.front, OUTPUT);
     pinMode(pins_.back, OUTPUT);
-    reset();
+    analogWriteFrequency(pins_.pwm, config::pwm_frequency);
+    stop();
   }
 
   void reset() {
     setSpeed(0);
+    kalman.reset();
     resetTick();
     pid.reset();
   }
 
   void setSpeed(int speed) {
-    if (speed > deadzone_) {
+    if (speed * active_ > deadzone_) {
       analogWrite(pins_.pwm, speed);
       digitalWrite(pins_.front, HIGH);
       digitalWrite(pins_.back, LOW);
 
-    } else if (speed < -deadzone_) {
+    } else if (speed * active_ < -deadzone_) {
       analogWrite(pins_.pwm, -speed);
       digitalWrite(pins_.front, LOW);
       digitalWrite(pins_.back, HIGH);
@@ -73,6 +74,15 @@ public:
     pid.updateRes(getX(KF_distance), getX(KF_speed), getX(KF_acceleration));
     setSpeed(pid.getRes() * k_pwm_);
   }
+  void stop() {
+    reset();
+    active_ = false;
+  }
+
+  void activate() {
+    reset();
+    active_ = true;
+  }
 
 private:
   MotorPins pins_;
@@ -84,4 +94,5 @@ private:
   float pi_;
   float wheel_diameter_;
   float k_pwm_;
+  bool active_ = false;
 };

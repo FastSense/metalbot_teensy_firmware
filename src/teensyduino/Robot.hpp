@@ -8,14 +8,15 @@
 template <uint8_t N> class Robot {
 public:
   Robot(float base_width) : base_width_(base_width) {}
-  void start() {
+  void init() {
     TemperatureSensor::start();
     battery::start();
     for (size_t i = 0; i < N; i++) {
-      motors_[i].start();
+      motors_[i].init();
     }
   }
   void reset() {
+    updateTargetWheelsSpeed(0, 0);
     for (size_t i = 0; i < N; i++) {
       motors_[i].reset();
     }
@@ -52,14 +53,22 @@ public:
     quaternion_W_ = cos(getAngle() / 2);
   }
 
-  void hardStopLoop() { /// when connection lost after ping
-    while (1) {
-      for (size_t i = 0; i < N; i++)
-        motors_[i].setSpeed(0);
-      delay(10);
-    }
+  void stop() { /// when connection lost after ping
+    DBG.print("Выключение робота.. ");
+    updateTargetWheelsSpeed(0, 0);
+    delay(100);
+    for (size_t i = 0; i < N; i++)
+      motors_[i].stop();
+    DBG.println("завершено");
   }
-
+  void activate() { /// when connection lost after ping
+    DBG.print("Активация робота.. ");
+    updateTargetWheelsSpeed(0, 0);
+    delay(100);
+    for (size_t i = 0; i < N; i++)
+      motors_[i].activate();
+    DBG.println("завершена");
+  }
   float getSpeed() { return speed_; }
   float getAngularSpeed() { return angular_speed_; }
 

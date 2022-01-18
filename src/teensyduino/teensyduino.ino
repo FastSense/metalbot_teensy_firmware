@@ -23,11 +23,14 @@ rcl_timer_t stop_timer;
 rcl_timer_t pid_timer;
 rcl_timer_t pub_timer;
 
+bool micro_ros_init_successful = false;
 bool on_cmd_vel = false;
+bool on_start = false;
 
 void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
+    // DBG.println("КБ публикаций");
     //заполнение сообщений обратной связи
     velocity_msg.linear.x = robot.getSpeed();
     velocity_msg.angular.z = robot.getAngularSpeed();
@@ -58,15 +61,20 @@ void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
 void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
+    DBG.println("КБ проверки пакетов");
     if (on_cmd_vel)
       on_cmd_vel = false;
     else {
-      // если пропущено сообщение управления скоростью, регуляторам
-      // устанавливается целевое значение {0}
-      robot.updateTargetWheelsSpeed(0, 0);
+      if (on_start) {
+        on_start = false;
+        DBG.println("Не старт");
+        robot.stop(); // выключение моторов после отрицательного теста
+      }
       // тест связи с агентом на хосте
-      if (RMW_RET_OK != rmw_uros_ping_agent(/*att period*/ 50, /*att*/ 3))
-        robot.hardStopLoop(); // выключение моторов после отрицательного теста
+      if (!MRW.checkConnection()) {
+        MRW.linkOff();
+        // robot.stop(); // выключение моторов после отрицательного теста
+      }
     }
   }
 }
@@ -74,46 +82,105 @@ void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
 void cmd_vel_sub_cb(const void *msgin) {
   const geometry_msgs__msg__Twist *msg =
       (const geometry_msgs__msg__Twist *)msgin;
+  DBG.println("КБ подписчика");
+  if (!on_start) {
+    robot.activate();
+    DBG.println("Старт");
+    on_start = true; //проверка получения первого сообщения (начало управления)
+  }
   robot.updateTargetWheelsSpeed(msg->linear.x, msg->angular.z);
   on_cmd_vel = true; // flag for canceling soft stop
 }
 
+void create_entities();
+void destroy_entities();
+
 void setup() {
+  set_microros_transports();
+  DBG.begin(115200);
   delay(config::setup_delay);
-  // TODO: ожидание запуска агента на хосте
+  DBG.println("Инициализация робота");
+  robot.init();
+  MRW.waitForConnection();
+}
 
-  robot.start();
-  // TODO: иниц-ия[+освобожение] объектов для функции перезапуска без tycmd
+void loop() {
+  if (MRW.checkConnection()) {
+    // MRW.toggleLinked();
+    MRW.linkOn();
+    if (!micro_ros_init_successful) {
+      create_entities();
+    } else
+      MRW.safeSpinLoop();
+  } else if (micro_ros_init_successful) {
+    destroy_entities();
+  }
+}
 
-  /* MICRO_ROS OBJ-S INIT: */
+void create_entities() {
+  robot.stop();
+  DBG.println("Инициализация враппера");
+  MRW.init();
+
+  DBG.println("Инициализация паблишеров");
   MRW.initPub(&velocity_pub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
               "velocity");
   MRW.initPub(&pose_pub, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Pose),
               "pose");
-
   MRW.initPub(&battery_state_pub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, BatteryState),
               "battery_state");
-
   MRW.initPub(&temperature_pub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Temperature),
               "temperature");
 
+  DBG.println("Инициализация подписчика");
   MRW.initSub(&cmd_vel_sub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
               "cmd_vel");
 
+  DBG.println("Инициализация таймеров");
   MRW.initTimer(stop_timer_cb, &stop_timer, config::stop_dt);
   MRW.initTimer(pid_timer_cb, &pid_timer, config::pid_dt);
   MRW.initTimer(pub_timer_cb, &pub_timer, config::pub_dt);
 
+  DBG.println("Инициализация экзекутора и очереди");
   MRW.initExecutor();
-  /* PRIORITY DETERMINED SEQUENCE OF ADDITIONS: */
-  MRW.addSub(&cmd_vel_sub, cmd_vel_sub_cb, cmd_vel_msg);
   MRW.addTimer(&stop_timer);
+  MRW.addSub(&cmd_vel_sub, &cmd_vel_sub_cb, &cmd_vel_msg);
+  DBG.println("активирован подписчик");
   MRW.addTimer(&pid_timer);
   MRW.addTimer(&pub_timer);
+  micro_ros_init_successful = true;
+  DBG.println("Сущности созданы");
 }
 
-void loop() { MRW.spinExecutor(); }
+void destroy_entities() {
+  robot.stop();
+  DBG.println("Удаление всех сущностей..");
+  MRW.finiPub(&temperature_pub);
+  DBG.println("удален паблишер");
+  MRW.finiPub(&battery_state_pub);
+  DBG.println("удален паблишер");
+  MRW.finiPub(&pose_pub);
+  DBG.println("удален паблишер");
+  MRW.finiPub(&velocity_pub);
+  DBG.println("удален паблишер");
+  MRW.finiSub(&cmd_vel_sub);
+  DBG.println("удален подписчик");
+  MRW.finiTimer(&pub_timer);
+  DBG.println("удален таймер");
+  MRW.finiTimer(&pid_timer);
+  DBG.println("удален таймер");
+  MRW.finiTimer(&stop_timer);
+  DBG.println("удален таймер");
+  MRW.finiExecutor();
+  DBG.println("удален экзекутор");
+  MRW.fini();
+  DBG.println("удален враппер");
+  micro_ros_init_successful = false;
+  on_cmd_vel = false;
+  on_start = false;
+  DBG.println("..завершено");
+}
