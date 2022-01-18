@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <math.h>
 
-#define DBG Serial5
+// #define DBG Serial5
 
 struct MotorPins {
   uint8_t pwm, front, back, encA, encB;
@@ -26,8 +26,9 @@ constexpr uint8_t motors_count = 2; // 4
 constexpr float base_width = 0.42f;
 
 constexpr uint8_t pid_dt = 10;
-constexpr uint16_t stop_dt = 205; //__DBG //115
+constexpr uint16_t stop_dt = 115; //__DBG //115
 constexpr uint16_t pub_dt = 200;  // 100
 constexpr uint16_t setup_delay = 100;
+constexpr uint16_t reconnection_delay = 200;
 constexpr float fade = 0.003f;
 } // namespace config

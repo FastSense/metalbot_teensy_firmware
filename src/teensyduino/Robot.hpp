@@ -54,20 +54,20 @@ public:
   }
 
   void stop() { /// when connection lost after ping
-    DBG.print("Выключение робота.. ");
+    // DBG.print("Выключение робота.. ");
     updateTargetWheelsSpeed(0, 0);
     delay(100);
     for (size_t i = 0; i < N; i++)
       motors_[i].stop();
-    DBG.println("завершено");
+    // DBG.println("завершено");
   }
   void activate() { /// when connection lost after ping
-    DBG.print("Активация робота.. ");
+    // DBG.print("Активация робота.. ");
     updateTargetWheelsSpeed(0, 0);
     delay(100);
     for (size_t i = 0; i < N; i++)
       motors_[i].activate();
-    DBG.println("завершена");
+    // DBG.println("завершена");
   }
   float getSpeed() { return speed_; }
   float getAngularSpeed() { return angular_speed_; }

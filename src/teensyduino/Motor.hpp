@@ -9,7 +9,7 @@ class Motor {
 public:
   /*TODO: init obj-s from main*/
   Motor(MotorPins pins,
-        // DBG
+        //
         float deadzone = 1,
         //
         float i_max = 0.15, float p_max = 0.3, float d_max = 0.12,
@@ -88,8 +88,8 @@ private:
   MotorPins pins_;
   Encoder encoder_;
   float deadzone_;
-  Regulator pid; // __DBG
-  Filter kalman; //__DBG
+  Regulator pid; // __// DBG
+  Filter kalman; //__// DBG
   int ipr_;
   float pi_;
   float wheel_diameter_;
