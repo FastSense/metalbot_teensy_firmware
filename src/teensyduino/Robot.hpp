@@ -14,12 +14,14 @@ public:
     for (size_t i = 0; i < N; i++) {
       motors_[i].init();
     }
+    resetOdom();
   }
   void reset() {
     updateTargetWheelsSpeed(0, 0);
     for (size_t i = 0; i < N; i++) {
       motors_[i].reset();
     }
+    resetOdom();
   }
 
   void updateTargetWheelsSpeed(double linear, double angular) {
@@ -45,7 +47,6 @@ public:
               motors_[L_wheel].getX(KF_distance)) /
              base_width_;
 
-    /*TODO: positon from kalman[KF_distance]*/
     position_X_ += getSpeed() * config::pid_dt / 1000 * cos(getAngle());
     position_Y_ += getSpeed() * config::pid_dt / 1000 * sin(getAngle());
 
@@ -53,22 +54,47 @@ public:
     quaternion_W_ = cos(getAngle() / 2);
   }
 
-  void stop() { /// when connection lost after ping
-    // DBG.print("Выключение робота.. ");
+  bool softStop() {
+    DBG.print("Мягкая остановка робота.. ");
     updateTargetWheelsSpeed(0, 0);
-    delay(100);
+    size_t safe_state = 0;
+    for (size_t i = 0; i < N; i++) {
+      float remaining = motors_[i].getX(KF_speed);
+      if (remaining < config::soft_stop_cap &&
+          remaining > -config::soft_stop_cap)
+        safe_state++;
+    }
+    if (safe_state == N) {
+      DBG.println("завершена");
+      return true;
+    } else
+      return false;
+  }
+  void resetOdom() {
+    position_X_ = 0;
+    position_Y_ = 0;
+    quaternion_W_ = 0;
+    quaternion_Z_ = 0;
+  }
+
+  void stop() { /// when connection lost after ping
+    DBG.print("Выключение робота.. ");
+    updateTargetWheelsSpeed(0, 0);
     for (size_t i = 0; i < N; i++)
       motors_[i].stop();
-    // DBG.println("завершено");
+    DBG.println("завершено");
+    resetOdom();
   }
+
   void activate() { /// when connection lost after ping
-    // DBG.print("Активация робота.. ");
+    DBG.print("Активация робота.. ");
     updateTargetWheelsSpeed(0, 0);
-    delay(100);
     for (size_t i = 0; i < N; i++)
       motors_[i].activate();
-    // DBG.println("завершена");
+    DBG.println("завершена");
+    resetOdom();
   }
+
   float getSpeed() { return speed_; }
   float getAngularSpeed() { return angular_speed_; }
 

@@ -81,37 +81,34 @@ public:
   /* CUSTOM SPIN FUNC*/
   void safeSpinLoop() {
     if (linked) {
-      // DBG.print("Запущен цикл экзекутора. КБ в очереди: ");
-      // DBG.println(callbacks_count);
+      DBG.print("Запущен цикл экзекутора. КБ в очереди: ");
+      DBG.println(callbacks_count);
       while (linked) {
         delayMicroseconds(1000); // 1ms
         rclc_executor_spin_some(&executor, (&executor)->timeout_ns);
       }
       // default timeout is 1000ms
-      // DBG.println("Выход из цикла экзекутора");
+      DBG.println("Выход из цикла экзекутора");
     } else {
-      // DBG.println("Экзекутор не запущен: флаг связи погашен");
+      DBG.println("Экзекутор не запущен: флаг связи погашен");
     }
   }
-  // void toggleLinked() {
-  //   linked = !linked;
-  //   // DBG.println("переключен флаг соединения");
-  // }
+
   void linkOn() {
     linked = true;
-    // DBG.println("активирован флаг соединения");
+    DBG.println("активирован флаг соединения");
   }
   void linkOff() {
     linked = false;
-    // DBG.println("погашен флаг соединения");
+    DBG.println("погашен флаг соединения");
   }
   // bool linked() { return linked; }
 
   void waitForConnection() {
-    // DBG.println("Ожидание соединения");
+    DBG.println("Ожидание соединения");
     while (!linked) {
-      static int counter = 0; // // DBG
-      // DBG.println(counter);
+      static int counter = 0;
+      DBG.println(counter);
       counter++;
       if (RMW_RET_OK == rmw_uros_ping_agent(/*att period*/ 100, /*att*/ 1))
         linkOn();
@@ -119,12 +116,12 @@ public:
   }
 
   bool checkConnection() {
-    // DBG.print("Проверка соединения..");
+    DBG.print("Проверка соединения..");
     if (RMW_RET_OK == rmw_uros_ping_agent(/*att period*/ 1, /*att*/ 2)) {
-      // DBG.println("есть контакт");
+      DBG.println("есть контакт");
       return true;
     } else {
-      // DBG.println("нет связи");
+      DBG.println("нет связи");
       return false;
     }
   }

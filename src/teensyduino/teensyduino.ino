@@ -33,7 +33,7 @@ void destroy_entities();
 void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    // // DBG.println("КБ публикаций");
+    // DBG.println("КБ публикаций");
     //заполнение сообщений обратной связи
     velocity_msg.linear.x = robot.getSpeed();
     velocity_msg.angular.z = robot.getAngularSpeed();
@@ -64,33 +64,35 @@ void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
 void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    // DBG.print(": ");
+    DBG.print(": ");
     if (on_cmd_vel)
       on_cmd_vel = false;
     else {
       if (on_start) {
-        on_start = false;
-        // DBG.println("Стоп");
-        robot.stop(); // выключение моторов после отрицательного теста
-      }
-      // тест связи с агентом на хосте
-      if (!MRW.checkConnection()) {
+        DBG.println("Стоп");
+        if (robot.softStop()) { // выключение моторов после отрицательного теста
+          on_start = false;
+          robot.stop();
+        }
+      } else
+          // тест связи с агентом на хосте
+          if (!MRW.checkConnection()) {
         MRW.linkOff();
         destroy_entities();
         // delay(config::reconnection_delay);
       }
     }
-    // DBG.println(" ");
+    DBG.println(" ");
   }
 }
 
 void cmd_vel_sub_cb(const void *msgin) {
   const geometry_msgs__msg__Twist *msg =
       (const geometry_msgs__msg__Twist *)msgin;
-  // DBG.println("КБ подписчика");
+  DBG.println("КБ подписчика");
   if (!on_start) {
     robot.activate();
-    // DBG.println("Старт");
+    DBG.println("Старт");
     on_start = true; //проверка получения первого сообщения (начало управления)
   }
   robot.updateTargetWheelsSpeed(msg->linear.x, msg->angular.z);
@@ -99,16 +101,16 @@ void cmd_vel_sub_cb(const void *msgin) {
 
 void setup() {
   set_microros_transports();
-  // DBG.begin(115200);
+  DBG.begin(115200);
   delay(config::setup_delay);
-  // DBG.println("~+~");
-  // DBG.println("Инициализация робота");
+  DBG.println("~+~");
+  DBG.println("Инициализация робота");
   robot.init();
   MRW.waitForConnection();
 }
 
 void loop() {
-  // DBG.println("Запуск основной цикла");
+  DBG.println("Запуск основной цикла");
   if (MRW.checkConnection()) {
     MRW.linkOn();
     if (!micro_ros_init_successful) {
@@ -119,16 +121,16 @@ void loop() {
     destroy_entities();
   }
   MRW.linkOff();
-  // DBG.println("Ожидание восстановления связи");
-  delay(config::reconnection_delay);
+  DBG.println("Ожидание восстановления связи");
+  // delay(config::reconnection_delay);
 }
 
 void create_entities() {
   robot.stop();
-  // DBG.println("Инициализация враппера");
+  DBG.println("Инициализация враппера");
   MRW.init();
 
-  // DBG.println("Инициализация паблишеров");
+  DBG.println("Инициализация паблишеров");
   MRW.initPub(&velocity_pub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
               "velocity");
@@ -141,52 +143,52 @@ void create_entities() {
               ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Temperature),
               "temperature");
 
-  // DBG.println("Инициализация подписчика");
+  DBG.println("Инициализация подписчика");
   MRW.initSub(&cmd_vel_sub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
               "cmd_vel");
 
-  // DBG.println("Инициализация таймеров");
+  DBG.println("Инициализация таймеров");
   MRW.initTimer(stop_timer_cb, &stop_timer, config::stop_dt);
   MRW.initTimer(pid_timer_cb, &pid_timer, config::pid_dt);
   MRW.initTimer(pub_timer_cb, &pub_timer, config::pub_dt);
 
-  // DBG.println("Инициализация экзекутора и очереди");
+  DBG.println("Инициализация экзекутора и очереди");
   MRW.initExecutor();
   MRW.addSub(&cmd_vel_sub, &cmd_vel_sub_cb, &cmd_vel_msg);
-  // DBG.println("активирован подписчик");
+  DBG.println("активирован подписчик");
   MRW.addTimer(&pid_timer);
   MRW.addTimer(&pub_timer);
   MRW.addTimer(&stop_timer);
   micro_ros_init_successful = true;
-  // DBG.println("Сущности созданы");
+  DBG.println("Сущности созданы");
 }
 
 void destroy_entities() {
   robot.stop();
-  // DBG.println("Удаление всех сущностей..");
+  DBG.println("Удаление всех сущностей..");
   MRW.finiPub(&temperature_pub);
-  // DBG.println("удален паблишер");
+  DBG.println("удален паблишер");
   MRW.finiPub(&battery_state_pub);
-  // DBG.println("удален паблишер");
+  DBG.println("удален паблишер");
   MRW.finiPub(&pose_pub);
-  // DBG.println("удален паблишер");
+  DBG.println("удален паблишер");
   MRW.finiPub(&velocity_pub);
-  // DBG.println("удален паблишер");
+  DBG.println("удален паблишер");
   MRW.finiSub(&cmd_vel_sub);
-  // DBG.println("удален подписчик");
+  DBG.println("удален подписчик");
   MRW.finiTimer(&pub_timer);
-  // DBG.println("удален таймер");
+  DBG.println("удален таймер");
   MRW.finiTimer(&pid_timer);
-  // DBG.println("удален таймер");
+  DBG.println("удален таймер");
   MRW.finiTimer(&stop_timer);
-  // DBG.println("удален таймер");
+  DBG.println("удален таймер");
   MRW.finiExecutor();
-  // DBG.println("удален экзекутор");
+  DBG.println("удален экзекутор");
   MRW.fini();
-  // DBG.println("удален враппер");
+  DBG.println("удален враппер");
   micro_ros_init_successful = false;
   on_cmd_vel = false;
   on_start = false;
-  // DBG.println("..завершено");
+  DBG.println("..завершено");
 }
