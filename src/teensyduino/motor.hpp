@@ -7,7 +7,6 @@
 
 class Motor {
 public:
-  /*TODO: init obj-s from main*/
   Motor(MotorPins pins)
       : pins_(pins), encoder_(pins.encA, pins.encB),
         deadzone_(config::deadzone),
@@ -16,21 +15,6 @@ public:
         kalman_(config::dt, config::model_noise, config::measurement_noise),
         ipr_(config::ipr), pi_(config::pi),
         wheel_diameter_(config::wheel_diameter), k_pwm_(config::k_pwm){};
-
-  void init() {
-    pinMode(pins_.pwm, OUTPUT);
-    pinMode(pins_.front, OUTPUT);
-    pinMode(pins_.back, OUTPUT);
-    analogWriteFrequency(pins_.pwm, config::pwm_frequency);
-    stop();
-  }
-
-  void reset() {
-    setSpeed(0);
-    kalman_.reset();
-    resetTick();
-    pid_.reset();
-  }
 
   void setSpeed(int speed) {
     if (speed * active_ > deadzone_) {
@@ -49,14 +33,14 @@ public:
       digitalWrite(pins_.back, LOW);
     }
   }
-  //вызывать только периодически для корректной работы фильтра:
+
+  int getTickCount() { return encoder_.read(); }
+
   void updateSensor() {
     kalman_.update(getTickCount() * pi_ * wheel_diameter_ / ipr_);
   }
 
   float getX(size_t n) { return kalman_.getX(n); }
-
-  int getTickCount() { return encoder_.read(); }
 
   void resetTick() { encoder_.write(0); }
 
@@ -66,6 +50,14 @@ public:
     pid_.updateRes(getX(KF_distance), getX(KF_speed), getX(KF_acceleration));
     setSpeed(pid_.getRes() * k_pwm_);
   }
+
+  void reset() {
+    setSpeed(0);
+    kalman_.reset();
+    resetTick();
+    pid_.reset();
+  }
+
   void stop() {
     reset();
     active_ = false;
@@ -74,6 +66,14 @@ public:
   void activate() {
     reset();
     active_ = true;
+  }
+
+  void init() {
+    pinMode(pins_.pwm, OUTPUT);
+    pinMode(pins_.front, OUTPUT);
+    pinMode(pins_.back, OUTPUT);
+    analogWriteFrequency(pins_.pwm, config::pwm_frequency);
+    stop();
   }
 
 private:

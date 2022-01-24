@@ -21,7 +21,6 @@ void start() {
   uint8_t Set_ERROR = 0;
   float Current_LSB = 0;
   float Power_LSB = 0;
-  // uint16_t Read_CAL = 0;
 
   IC1.begin();
   CAL = IC1.setCalibration(R_shunt, I_max, &Current_LSB, &Power_LSB, &m_c, &R_c,

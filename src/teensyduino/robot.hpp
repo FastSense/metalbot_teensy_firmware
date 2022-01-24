@@ -8,21 +8,6 @@
 template <uint8_t N> class Robot {
 public:
   Robot(float base_width) : base_width_(base_width) {}
-  void init() {
-    TemperatureSensor::start();
-    battery::start();
-    for (size_t i = 0; i < N; i++) {
-      motors_[i].init();
-    }
-    resetOdom();
-  }
-  void reset() {
-    updateTargetWheelsSpeed(0, 0);
-    for (size_t i = 0; i < N; i++) {
-      motors_[i].reset();
-    }
-    resetOdom();
-  }
 
   void updateTargetWheelsSpeed(double linear, double angular) {
     motors_targets_[L_wheel] = linear - angular * base_width_ / 2;
@@ -92,6 +77,23 @@ public:
     for (size_t i = 0; i < N; i++)
       motors_[i].activate();
     DBG.println("завершена");
+    resetOdom();
+  }
+
+  void init() {
+    TemperatureSensor::start();
+    battery::start();
+    for (size_t i = 0; i < N; i++) {
+      motors_[i].init();
+    }
+    resetOdom();
+  }
+
+  void reset() {
+    updateTargetWheelsSpeed(0, 0);
+    for (size_t i = 0; i < N; i++) {
+      motors_[i].reset();
+    }
     resetOdom();
   }
 
