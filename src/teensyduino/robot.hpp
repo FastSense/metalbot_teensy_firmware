@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Battery.hpp"
-#include "Common.hpp"
-#include "Motor.hpp"
+#include "battery.hpp"
+#include "common.hpp"
+#include "motor.hpp"
 #include "temperature_sensor.hpp"
 
 template <uint8_t N> class Robot {
@@ -115,18 +115,12 @@ public:
 private:
   float motors_targets_[N] = {0, 0};
 
-  /*TODO: move pins to config */
   Motor motors_[N] = {
-      Motor({14, 15, 18, 5, 4}), // L
-      Motor({19, 22, 23, 6, 7}), // R
-
-      // Motor({8, 10, 9, 1, 0}),   // L
-      // Motor({11, 13, 12, 2, 3}), // R
-
+      Motor(pins::left_motor),
+      Motor(pins::right_motor),
   };
 
   float base_width_;
-
   float speed_ = 0;
   float angular_speed_ = 0;
   float position_X_ = 0;

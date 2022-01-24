@@ -1,5 +1,5 @@
 #pragma once
-#include "Common.hpp"
+#include "common.hpp"
 
 #include <micro_ros_arduino.h>
 
@@ -13,6 +13,7 @@
 #include <geometry_msgs/msg/twist.h>
 #include <sensor_msgs/msg/battery_state.h>
 #include <sensor_msgs/msg/temperature.h>
+#include <std_msgs/msg/bool.h>
 
 class MicroRosWrapper {
 public:

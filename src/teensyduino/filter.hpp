@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Common.hpp"
+#include "common.hpp"
 #include <BasicLinearAlgebra.h>
 
 class Filter {
 public:
-  Filter(float dt = 0.01, float model_noise = 1, float measurement_noise = 1)
+  Filter(float dt, float model_noise, float measurement_noise)
       : dt_(dt), model_noise_(model_noise),
         measurement_noise_(measurement_noise) {
     reset();

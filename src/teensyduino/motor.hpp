@@ -1,29 +1,21 @@
 #pragma once
 
-#include "Common.hpp"
-#include "Filter.hpp"
-#include "Pid.hpp"
+#include "common.hpp"
+#include "filter.hpp"
+#include "pid.hpp"
 #include <Encoder.h>
 
 class Motor {
 public:
   /*TODO: init obj-s from main*/
-  Motor(MotorPins pins,
-        //
-        float deadzone = 1,
-        //
-        float i_max = 0.15, float p_max = 0.3, float d_max = 0.12,
-        //
-        float kp = 0.015, float ki = 2.1, float kd = 0.005,
-        //
-        float dt = 0.01,
-        //
-        float model_noise = 25.0, float measurement_noise = 0.001)
-      : pins_(pins), encoder_(pins.encA, pins.encB), deadzone_(deadzone),
-        pid(p_max, i_max, d_max, kp, ki, kd, dt),
-        kalman(dt, model_noise, measurement_noise), ipr_(config::ipr),
-        pi_(config::pi), wheel_diameter_(config::wheel_diameter),
-        k_pwm_(config::k_pwm){};
+  Motor(MotorPins pins)
+      : pins_(pins), encoder_(pins.encA, pins.encB),
+        deadzone_(config::deadzone),
+        pid_(config::dt, config::p_max, config::i_max, config::d_max,
+             config::kp, config::ki, config::kd),
+        kalman_(config::dt, config::model_noise, config::measurement_noise),
+        ipr_(config::ipr), pi_(config::pi),
+        wheel_diameter_(config::wheel_diameter), k_pwm_(config::k_pwm){};
 
   void init() {
     pinMode(pins_.pwm, OUTPUT);
@@ -35,9 +27,9 @@ public:
 
   void reset() {
     setSpeed(0);
-    kalman.reset();
+    kalman_.reset();
     resetTick();
-    pid.reset();
+    pid_.reset();
   }
 
   void setSpeed(int speed) {
@@ -59,20 +51,20 @@ public:
   }
   //вызывать только периодически для корректной работы фильтра:
   void updateSensor() {
-    kalman.update(getTickCount() * pi_ * wheel_diameter_ / ipr_);
+    kalman_.update(getTickCount() * pi_ * wheel_diameter_ / ipr_);
   }
 
-  float getX(size_t n) { return kalman.getX(n); }
+  float getX(size_t n) { return kalman_.getX(n); }
 
   int getTickCount() { return encoder_.read(); }
 
   void resetTick() { encoder_.write(0); }
 
   void updateSpeed(double target) {
-    pid.updateTgt(target, getX(KF_distance));
+    pid_.updateTgt(target, getX(KF_distance));
     updateSensor();
-    pid.updateRes(getX(KF_distance), getX(KF_speed), getX(KF_acceleration));
-    setSpeed(pid.getRes() * k_pwm_);
+    pid_.updateRes(getX(KF_distance), getX(KF_speed), getX(KF_acceleration));
+    setSpeed(pid_.getRes() * k_pwm_);
   }
   void stop() {
     reset();
@@ -88,8 +80,8 @@ private:
   MotorPins pins_;
   Encoder encoder_;
   float deadzone_;
-  Regulator pid; // __// DBG
-  Filter kalman; //__// DBG
+  Regulator pid_;
+  Filter kalman_;
   int ipr_;
   float pi_;
   float wheel_diameter_;

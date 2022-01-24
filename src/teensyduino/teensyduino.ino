@@ -1,8 +1,8 @@
-#include "Common.hpp"
-#include "Filter.hpp"
-#include "Pid.hpp"
-#include "Robot.hpp"
-#include "mcr.hpp"
+#include "common.hpp"
+#include "filter.hpp"
+#include "pid.hpp"
+#include "robot.hpp"
+#include "uros.hpp"
 
 Robot<config::motors_count> robot(config::base_width);
 MicroRosWrapper MRW(config::ros_domain_id);
@@ -12,8 +12,11 @@ sensor_msgs__msg__BatteryState battery_state_msg;
 sensor_msgs__msg__Temperature temperature_msg;
 geometry_msgs__msg__Twist velocity_msg;
 geometry_msgs__msg__Pose pose_msg;
+std_msgs__msg__Bool led_msg;
 
 rcl_subscription_t cmd_vel_sub;
+rcl_subscription_t led_sub;
+
 rcl_publisher_t battery_state_pub;
 rcl_publisher_t velocity_pub;
 rcl_publisher_t pose_pub;
@@ -99,7 +102,25 @@ void cmd_vel_sub_cb(const void *msgin) {
   on_cmd_vel = true; // flag for canceling soft stop
 }
 
+void led_sub_cb(const void *msgin) {
+  const std_msgs__msg__Bool *msg = (const std_msgs__msg__Bool *)msgin;
+  if (msg->data) {
+    digitalWrite(pins::led_1, HIGH);
+    digitalWrite(pins::dir_5, HIGH);
+  } else {
+    digitalWrite(pins::led_1, LOW);
+    digitalWrite(pins::dir_5, LOW);
+  }
+}
+
 void setup() {
+  pinMode(pins::led_1, OUTPUT);
+  pinMode(pins::led_2, OUTPUT);
+  pinMode(pins::dir_5, OUTPUT);
+  digitalWrite(pins::led_1, LOW);
+  digitalWrite(pins::led_2, HIGH);
+  digitalWrite(pins::dir_5, LOW);
+
   set_microros_transports();
   DBG.begin(115200);
   delay(config::setup_delay);
@@ -126,6 +147,7 @@ void loop() {
 }
 
 void create_entities() {
+  digitalWrite(pins::led_2, HIGH);
   robot.stop();
   DBG.println("Инициализация враппера");
   MRW.init();
@@ -147,6 +169,8 @@ void create_entities() {
   MRW.initSub(&cmd_vel_sub,
               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
               "cmd_vel");
+  MRW.initSub(&led_sub, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Bool),
+              "led");
 
   DBG.println("Инициализация таймеров");
   MRW.initTimer(stop_timer_cb, &stop_timer, config::stop_dt);
@@ -157,14 +181,18 @@ void create_entities() {
   MRW.initExecutor();
   MRW.addSub(&cmd_vel_sub, &cmd_vel_sub_cb, &cmd_vel_msg);
   DBG.println("активирован подписчик");
+  MRW.addSub(&led_sub, &led_sub_cb, &led_msg);
+  DBG.println("активирован подписчик");
   MRW.addTimer(&pid_timer);
   MRW.addTimer(&pub_timer);
   MRW.addTimer(&stop_timer);
   micro_ros_init_successful = true;
   DBG.println("Сущности созданы");
+  digitalWrite(pins::led_2, LOW);
 }
 
 void destroy_entities() {
+  digitalWrite(pins::led_2, HIGH);
   robot.stop();
   DBG.println("Удаление всех сущностей..");
   MRW.finiPub(&temperature_pub);
@@ -176,6 +204,8 @@ void destroy_entities() {
   MRW.finiPub(&velocity_pub);
   DBG.println("удален паблишер");
   MRW.finiSub(&cmd_vel_sub);
+  DBG.println("удален подписчик");
+  MRW.finiSub(&led_sub);
   DBG.println("удален подписчик");
   MRW.finiTimer(&pub_timer);
   DBG.println("удален таймер");
@@ -191,4 +221,5 @@ void destroy_entities() {
   on_cmd_vel = false;
   on_start = false;
   DBG.println("..завершено");
+  digitalWrite(pins::led_2, LOW);
 }

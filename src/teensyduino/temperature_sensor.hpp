@@ -1,11 +1,12 @@
 #pragma once
+#include "common.hpp"
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
 namespace {
-constexpr uint8_t pin = 26;
+
 constexpr uint8_t precision = 9;
-OneWire oneWire(pin);
+OneWire oneWire(pins::temperature);
 DallasTemperature sensors(&oneWire);
 DeviceAddress tempDeviceAddress;
 } // namespace

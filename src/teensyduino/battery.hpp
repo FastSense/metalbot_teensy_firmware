@@ -31,8 +31,10 @@ void start() {
 float getVoltage() { return IC1.getBusVoltage_V(); }
 float getShuntVoltage() { return IC1.getShuntVoltage_mV(); }
 
-// float getCurrent() { return IC1.getCurrent_mA() / 1000; }
-float getCurrent() { return getShuntVoltage() / R_shunt / 1000; } // DBG
+float getCurrent() {
+  return -1; // TODO?: fix current error
+  // return getShuntVoltage() / R_shunt / 1000;
+} // DBG
 
 float getPercentage() {
   return (getVoltage() - min_voltage) / (max_voltage - min_voltage);
