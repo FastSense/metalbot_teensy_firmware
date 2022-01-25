@@ -1,26 +1,27 @@
 #pragma once
 
-#include "Common.hpp"
+#include "common.hpp"
 #include <BasicLinearAlgebra.h>
 
 class Filter {
 public:
-  Filter(float dt = 0.01, float model_noise = 1, float measurement_noise = 1)
+  Filter(float dt, float model_noise, float measurement_noise)
       : dt_(dt), model_noise_(model_noise),
         measurement_noise_(measurement_noise) {
-
+    reset();
     matE = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    matH = {1, 0, 0};
+    matF = {1, dt, 0.5 * dt * dt, 0, 1, dt, 0, 0, 1};
+    matQ = {0, 0, 0, 0, 0, 0, 0, 0, model_noise_ * model_noise_};
+  };
+  void reset() {
     matZ(0) = 0;
     matY(0) = 0;
     matS(0) = 0;
     matK = {0, 0, 0};
-    matH = {1, 0, 0};
     matX = {0, 0, 0};
-
     matP = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-    matF = {1, dt, 0.5 * dt * dt, 0, 1, dt, 0, 0, 1};
-    matQ = {0, 0, 0, 0, 0, 0, 0, 0, model_noise_ * model_noise_};
-  };
+  }
 
   void update(float z) {
     matZ(0) = z;

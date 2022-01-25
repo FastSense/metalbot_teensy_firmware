@@ -1,25 +1,13 @@
 #pragma once
 
-#include "Battery.hpp"
-#include "Common.hpp"
-#include "Motor.hpp"
+#include "battery.hpp"
+#include "common.hpp"
+#include "motor.hpp"
 #include "temperature_sensor.hpp"
 
 template <uint8_t N> class Robot {
 public:
   Robot(float base_width) : base_width_(base_width) {}
-  void start() {
-    TemperatureSensor::start();
-    battery::start();
-    for (size_t i = 0; i < N; i++) {
-      motors_[i].start();
-    }
-  }
-  void reset() {
-    for (size_t i = 0; i < N; i++) {
-      motors_[i].reset();
-    }
-  }
 
   void updateTargetWheelsSpeed(double linear, double angular) {
     motors_targets_[L_wheel] = linear - angular * base_width_ / 2;
@@ -44,7 +32,6 @@ public:
               motors_[L_wheel].getX(KF_distance)) /
              base_width_;
 
-    /*TODO: positon from kalman[KF_distance]*/
     position_X_ += getSpeed() * config::pid_dt / 1000 * cos(getAngle());
     position_Y_ += getSpeed() * config::pid_dt / 1000 * sin(getAngle());
 
@@ -52,12 +39,62 @@ public:
     quaternion_W_ = cos(getAngle() / 2);
   }
 
-  void hardStopLoop() { /// when connection lost after ping
-    while (1) {
-      for (size_t i = 0; i < N; i++)
-        motors_[i].setSpeed(0);
-      delay(10);
+  bool softStop() {
+    DBG.print("Мягкая остановка робота.. ");
+    updateTargetWheelsSpeed(0, 0);
+    size_t safe_state = 0;
+    for (size_t i = 0; i < N; i++) {
+      float remaining = motors_[i].getX(KF_speed);
+      if (remaining < config::soft_stop_cap &&
+          remaining > -config::soft_stop_cap)
+        safe_state++;
     }
+    if (safe_state == N) {
+      DBG.println("завершена");
+      return true;
+    } else
+      return false;
+  }
+  void resetOdom() {
+    position_X_ = 0;
+    position_Y_ = 0;
+    quaternion_W_ = 0;
+    quaternion_Z_ = 0;
+  }
+
+  void stop() { /// when connection lost after ping
+    DBG.print("Выключение робота.. ");
+    updateTargetWheelsSpeed(0, 0);
+    for (size_t i = 0; i < N; i++)
+      motors_[i].stop();
+    DBG.println("завершено");
+    resetOdom();
+  }
+
+  void activate() { /// when connection lost after ping
+    DBG.print("Активация робота.. ");
+    updateTargetWheelsSpeed(0, 0);
+    for (size_t i = 0; i < N; i++)
+      motors_[i].activate();
+    DBG.println("завершена");
+    resetOdom();
+  }
+
+  void init() {
+    TemperatureSensor::start();
+    battery::start();
+    for (size_t i = 0; i < N; i++) {
+      motors_[i].init();
+    }
+    resetOdom();
+  }
+
+  void reset() {
+    updateTargetWheelsSpeed(0, 0);
+    for (size_t i = 0; i < N; i++) {
+      motors_[i].reset();
+    }
+    resetOdom();
   }
 
   float getSpeed() { return speed_; }
@@ -80,18 +117,12 @@ public:
 private:
   float motors_targets_[N] = {0, 0};
 
-  /*TODO: move pins to config */
   Motor motors_[N] = {
-      Motor({14, 15, 18, 5, 4}), // L
-      Motor({19, 22, 23, 6, 7}), // R
-
-      // Motor({8, 10, 9, 1, 0}),   // L
-      // Motor({11, 13, 12, 2, 3}), // R
-
+      Motor(pins::left_motor),
+      Motor(pins::right_motor),
   };
 
   float base_width_;
-
   float speed_ = 0;
   float angular_speed_ = 0;
   float position_X_ = 0;

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Common.hpp"
+#include "common.hpp"
 
 class Regulator {
 public:
-  Regulator(float p_max_, float i_max_, float d_max_, float k_p_, float k_i_,
-            float k_d_, float dt_)
-      : p_max(p_max_), i_max(i_max_), d_max(d_max_), k_p(k_p_), k_i(k_i_),
-        k_d(k_d_), dt(dt_) {
+  Regulator(float dt_, float p_max_, float i_max_, float d_max_, float k_p_,
+            float k_i_, float k_d_)
+      : dt(dt_), p_max(p_max_), i_max(i_max_), d_max(d_max_), k_p(k_p_),
+        k_i(k_i_), k_d(k_d_) {
     reset();
   }
 
@@ -15,8 +15,10 @@ public:
     tgt_A = (tgt_V - tgt_V_past) / dt;
     tgt_V_past = tgt_V;
 
-    // tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade;
-    tgt_S += tgt_V * dt; // DBG
+    if (tgt_V < config::fade_cap && tgt_V > -config::fade_cap)
+      tgt_S += tgt_V * dt + (xS - tgt_S) * config::fade;
+    else
+      tgt_S += tgt_V * dt;
 
     // LIMITATION INTEGRAL
     if (tgt_S > xS + i_max)
@@ -54,13 +56,14 @@ public:
   }
 
 private:
+  float dt;
+
   float p_max;
   float i_max;
   float d_max;
   float k_p;
   float k_i;
   float k_d;
-  float dt;
 
   float tgt_S;
   float tgt_V;
