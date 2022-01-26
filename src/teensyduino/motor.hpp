@@ -5,6 +5,7 @@
 #include "pid.hpp"
 #include <Encoder.h>
 
+// motor control and feedback
 class Motor {
 public:
   Motor(MotorPins pins)
@@ -34,14 +35,18 @@ public:
     }
   }
 
+  // get encoder value
   int getTickCount() { return encoder_.read(); }
 
   void updateSensor() {
     kalman_.update(getTickCount() * pi_ * wheel_diameter_ / ipr_);
   }
 
+  // get one of the filter output values:
+  // wheel path, speed, acceleration (kalmanX enum)
   float getX(size_t n) { return kalman_.getX(n); }
 
+  // reset encoder value
   void resetTick() { encoder_.write(0); }
 
   void updateSpeed(double target) {
@@ -79,12 +84,12 @@ public:
 private:
   MotorPins pins_;
   Encoder encoder_;
-  float deadzone_;
-  Regulator pid_;
+  float deadzone_; // motor activation threshold
+  Controller pid_;
   Filter kalman_;
-  int ipr_;
+  int ipr_; // encoder interrupts per rev
   float pi_;
   float wheel_diameter_;
-  float k_pwm_;
+  float k_pwm_; // pid to pwm conversion coeff
   bool active_ = false;
 };

@@ -1,17 +1,19 @@
+// Voltage measurement module
+
 #pragma once
 
 #include <Wire.h>
 #include <infinityPV_INA233.h>
 
-namespace battery {
-
-INA233 IC1(0x40);
-
+namespace {
 constexpr float R_shunt = 0.002;
 constexpr float I_max = 2;
 constexpr float min_voltage = 17.0;
 constexpr float max_voltage = 25.2;
+INA233 IC1(0x40);
+} // namespace
 
+namespace Battery {
 void start() {
   uint16_t CAL = 0;
   int16_t m_c = 0;
@@ -22,7 +24,10 @@ void start() {
   float Current_LSB = 0;
   float Power_LSB = 0;
 
+  // interface launch:
   IC1.begin();
+
+  // sensor calibration:
   CAL = IC1.setCalibration(R_shunt, I_max, &Current_LSB, &Power_LSB, &m_c, &R_c,
                            &m_p, &R_p, &Set_ERROR);
 }
@@ -39,4 +44,4 @@ float getPercentage() {
   return (getVoltage() - min_voltage) / (max_voltage - min_voltage);
 }
 
-} // namespace battery
+} // namespace Battery

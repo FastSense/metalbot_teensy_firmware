@@ -3,6 +3,7 @@
 #include "common.hpp"
 #include <BasicLinearAlgebra.h>
 
+// Kalman filter with constant-acceleration motion model. Filters the wheel path
 class Filter {
 public:
   Filter(float dt, float model_noise, float measurement_noise)
@@ -14,6 +15,7 @@ public:
     matF = {1, dt, 0.5 * dt * dt, 0, 1, dt, 0, 0, 1};
     matQ = {0, 0, 0, 0, 0, 0, 0, 0, model_noise_ * model_noise_};
   };
+
   void reset() {
     matZ(0) = 0;
     matY(0) = 0;
@@ -34,20 +36,22 @@ public:
     matP = (matE - matK * ~matH) * matP;
   };
 
-  float getX(size_t n) { return matX(n); }; //
+  // method to get one of the filter output values:
+  // distance, speed, acceleration (kalmanX enum)
+  float getX(size_t n) { return matX(n); };
 
 private:
   float dt_;
   float model_noise_;
   float measurement_noise_;
-  BLA::Matrix<1> matZ;
-  BLA::Matrix<1> matY;
-  BLA::Matrix<1> matS;
-  BLA::Matrix<3> matK;
-  BLA::Matrix<3> matH;
-  BLA::Matrix<3> matX;
-  BLA::Matrix<3, 3> matE;
-  BLA::Matrix<3, 3> matP;
-  BLA::Matrix<3, 3> matF;
-  BLA::Matrix<3, 3> matQ;
+  BLA::Matrix<1> matZ;    // input value (wheel path)
+  BLA::Matrix<1> matY;    // predicted state
+  BLA::Matrix<1> matS;    // system uncertainty
+  BLA::Matrix<3> matK;    // kalman gain
+  BLA::Matrix<3> matH;    // transposed observation
+  BLA::Matrix<3> matX;    // estimated system state
+  BLA::Matrix<3, 3> matE; // identity matrix
+  BLA::Matrix<3, 3> matP; // covariance matrix
+  BLA::Matrix<3, 3> matF; // state transition matrix
+  BLA::Matrix<3, 3> matQ; // process noise matrix
 };

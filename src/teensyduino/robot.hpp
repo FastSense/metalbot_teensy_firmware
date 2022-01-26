@@ -5,10 +5,12 @@
 #include "motor.hpp"
 #include "temperature_sensor.hpp"
 
+// motion control algorithm and odometry calculation
 template <uint8_t N> class Robot {
 public:
   Robot(float base_width) : base_width_(base_width) {}
 
+  // convert linear and angular robot speed into wheels speed
   void updateTargetWheelsSpeed(double linear, double angular) {
     motors_targets_[L_wheel] = linear - angular * base_width_ / 2;
     motors_targets_[R_wheel] = linear + angular * base_width_ / 2;
@@ -18,6 +20,9 @@ public:
     for (size_t i = 0; i < N; i++)
       motors_[i].updateSpeed(motors_targets_[i]);
   }
+
+  // calculate position, angle, linear and angular robot speed,
+  // using differential drive kinematics
   void updateOdometry() {
 
     speed_ = (motors_[L_wheel].getX(KF_speed) + //
@@ -39,6 +44,7 @@ public:
     quaternion_W_ = cos(getAngle() / 2);
   }
 
+  // shutdown of motors when speed is close to zero (soft_stop_cap)
   bool softStop() {
     DBG.print("Мягкая остановка робота.. ");
     updateTargetWheelsSpeed(0, 0);
@@ -55,6 +61,7 @@ public:
     } else
       return false;
   }
+
   void resetOdom() {
     position_X_ = 0;
     position_Y_ = 0;
@@ -62,7 +69,7 @@ public:
     quaternion_Z_ = 0;
   }
 
-  void stop() { /// when connection lost after ping
+  void stop() {
     DBG.print("Выключение робота.. ");
     updateTargetWheelsSpeed(0, 0);
     for (size_t i = 0; i < N; i++)
@@ -71,7 +78,7 @@ public:
     resetOdom();
   }
 
-  void activate() { /// when connection lost after ping
+  void activate() {
     DBG.print("Активация робота.. ");
     updateTargetWheelsSpeed(0, 0);
     for (size_t i = 0; i < N; i++)
@@ -82,7 +89,7 @@ public:
 
   void init() {
     TemperatureSensor::start();
-    battery::start();
+    Battery::start();
     for (size_t i = 0; i < N; i++) {
       motors_[i].init();
     }
@@ -108,9 +115,9 @@ public:
   float getPositionX() { return position_X_; }
   float getPositionY() { return position_Y_; }
 
-  float getBatteryVoltage() { return battery::getVoltage(); }
-  float getBatteryCurrent() { return battery::getCurrent(); }
-  float getBatteryPercentage() { return battery::getPercentage(); }
+  float getBatteryVoltage() { return Battery::getVoltage(); }
+  float getBatteryCurrent() { return Battery::getCurrent(); }
+  float getBatteryPercentage() { return Battery::getPercentage(); }
 
   float getTemperature() { return TemperatureSensor::getTemperature(); }
 

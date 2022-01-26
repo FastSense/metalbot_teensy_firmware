@@ -15,6 +15,7 @@
 #include <sensor_msgs/msg/temperature.h>
 #include <std_msgs/msg/bool.h>
 
+// template wrapper to simplify working with uros objects
 class MicroRosWrapper {
 public:
   MicroRosWrapper(size_t id_) {
@@ -45,7 +46,7 @@ public:
   template <class supportT, class nameT> /////////
   void initPub(rcl_publisher_t *pub, supportT sup, nameT name) {
     rclc_publisher_init_best_effort(pub, &node, sup, name);
-    // rclc_publisher_init_default(pub, &node, sup, name);
+    // rclc_publisher_init_default(pub, &node, sup, name); //default QoS
   }
   void finiPub(rcl_publisher_t *pub) { rcl_publisher_fini(pub, &node); }
 
@@ -70,7 +71,7 @@ public:
   }
   void finiExecutor() { rclc_executor_fini(&executor); }
 
-  /* PRIORITY DETERMINED SEQUENCE OF ADDITIONS: */
+  // PRIORITY DETERMINED SEQUENCE OF ADDITIONS:
   template <class Callable, class msgT> /////////
   void addSub(rcl_subscription_t *sub, Callable cb, msgT msg) {
     rclc_executor_add_subscription(&executor, sub, msg, cb, ON_NEW_DATA);
@@ -79,7 +80,7 @@ public:
     rclc_executor_add_timer(&executor, timer);
   }
 
-  /* CUSTOM SPIN FUNC*/
+  // CUSTOM SPIN FUNCTION:
   void safeSpinLoop() {
     if (linked) {
       DBG.print("Запущен цикл экзекутора. КБ в очереди: ");
@@ -99,11 +100,11 @@ public:
     linked = true;
     DBG.println("активирован флаг соединения");
   }
+
   void linkOff() {
     linked = false;
     DBG.println("погашен флаг соединения");
   }
-  // bool linked() { return linked; }
 
   void waitForConnection() {
     DBG.println("Ожидание соединения");

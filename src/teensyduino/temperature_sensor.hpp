@@ -1,10 +1,12 @@
+// Temperature measurement module
+
 #pragma once
+
 #include "common.hpp"
 #include <DallasTemperature.h>
 #include <OneWire.h>
 
 namespace {
-
 constexpr uint8_t precision = 9;
 OneWire oneWire(pins::temperature);
 DallasTemperature sensors(&oneWire);
@@ -12,19 +14,23 @@ DeviceAddress tempDeviceAddress;
 } // namespace
 
 namespace TemperatureSensor {
+
 void start() {
-  sensors.begin(); // запуск интерфеса
-  sensors.getAddress(tempDeviceAddress, 0); // получение адреса нулевого датчика
-  sensors.setResolution(tempDeviceAddress,
-                        precision); // установка низшего разрешения для
-                                    // обеспечения скорости чтения < 100мс
-  sensors.setWaitForConversion(false); // makes it async
-  sensors.requestTemperatures();       // Send the command to get temperatures
+  // interface launch:
+  sensors.begin();
+  sensors.getAddress(tempDeviceAddress, 0);
+
+  // setting low resolution for data processing period < 100ms:
+  sensors.setResolution(tempDeviceAddress, precision);
+
+  // makes it asynchronous:
+  sensors.setWaitForConversion(false);
+  sensors.requestTemperatures();
 }
 
 float getTemperature() {
   float temp = sensors.getTempCByIndex(0);
-  sensors.requestTemperatures(); // Send the command to get temperatures
+  sensors.requestTemperatures();
   return temp;
 }
 

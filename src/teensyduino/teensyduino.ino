@@ -26,18 +26,18 @@ rcl_timer_t stop_timer;
 rcl_timer_t pid_timer;
 rcl_timer_t pub_timer;
 
-bool micro_ros_init_successful = false;
-bool on_cmd_vel = false;
-bool on_start = false;
+bool micro_ros_init_successful = false; // uros objects initialization flag
+bool on_cmd_vel = false;                // cmd_vel periodicity check flag
+bool on_start = false;                  // cmd_vel publish start flag
 
+// functions for deactivating and re-initializing uros objects
 void create_entities();
 void destroy_entities();
 
+// timer callback: fill and publish messages (200 ms)
 void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
-    // DBG.println("КБ публикаций");
-    //заполнение сообщений обратной связи
     velocity_msg.linear.x = robot.getSpeed();
     velocity_msg.angular.z = robot.getAngularSpeed();
     pose_msg.position.x = robot.getPositionX();
@@ -48,7 +48,6 @@ void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
     battery_state_msg.current = robot.getBatteryCurrent();
     battery_state_msg.percentage = robot.getBatteryPercentage();
     temperature_msg.temperature = robot.getTemperature();
-    //публикация сообщений
     MRW.publish(&velocity_pub, &velocity_msg);
     MRW.publish(&pose_pub, &pose_msg);
     MRW.publish(&battery_state_pub, &battery_state_msg);
@@ -56,6 +55,7 @@ void pub_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   }
 }
 
+// timer callback: update regulation and odometry (10 ms)
 void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
@@ -64,6 +64,7 @@ void pid_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   }
 }
 
+// timer callback: check cmd_vel periodicity and soft stop if failed (115 ms)
 void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
@@ -73,22 +74,20 @@ void stop_timer_cb(rcl_timer_t *timer, int64_t last_call_time) {
     else {
       if (on_start) {
         DBG.println("Стоп");
-        if (robot.softStop()) { // выключение моторов после отрицательного теста
+        if (robot.softStop()) {
           on_start = false;
           robot.stop();
         }
-      } else
-          // тест связи с агентом на хосте
-          if (!MRW.checkConnection()) {
+      } else if (!MRW.checkConnection()) {
         MRW.linkOff();
         destroy_entities();
-        // delay(config::reconnection_delay);
       }
     }
     DBG.println(" ");
   }
 }
 
+// subscriber callback: check cmd_vel periodicity and soft stop if failed
 void cmd_vel_sub_cb(const void *msgin) {
   const geometry_msgs__msg__Twist *msg =
       (const geometry_msgs__msg__Twist *)msgin;
@@ -96,12 +95,14 @@ void cmd_vel_sub_cb(const void *msgin) {
   if (!on_start) {
     robot.activate();
     DBG.println("Старт");
-    on_start = true; //проверка получения первого сообщения (начало управления)
+    on_start = true;
   }
   robot.updateTargetWheelsSpeed(msg->linear.x, msg->angular.z);
-  on_cmd_vel = true; // flag for canceling soft stop
+  on_cmd_vel = true;
 }
 
+// subscriber callback: power button
+//(software and hardware parts are not implemented)
 void led_sub_cb(const void *msgin) {
   const std_msgs__msg__Bool *msg = (const std_msgs__msg__Bool *)msgin;
   if (msg->data) {
@@ -113,6 +114,7 @@ void led_sub_cb(const void *msgin) {
   }
 }
 
+// starting, preparing and waiting for connection
 void setup() {
   pinMode(pins::led_1, OUTPUT);
   pinMode(pins::led_2, OUTPUT);
@@ -130,6 +132,7 @@ void setup() {
   MRW.waitForConnection();
 }
 
+// main loop
 void loop() {
   DBG.println("Запуск основной цикла");
   if (MRW.checkConnection()) {
@@ -143,7 +146,6 @@ void loop() {
   }
   MRW.linkOff();
   DBG.println("Ожидание восстановления связи");
-  // delay(config::reconnection_delay);
 }
 
 void create_entities() {
