@@ -85,9 +85,9 @@ private:
   MotorPins pins_;
   Encoder encoder_;
   float deadzone_; // motor activation threshold
-  Controller pid_;
-  Filter kalman_;
-  int ipr_; // encoder interrupts per rev
+  Controller pid_; // velocity controller
+  Filter kalman_;  // distance filter
+  int ipr_;        // encoder interrupts per rev
   float pi_;
   float wheel_diameter_;
   float k_pwm_; // pid to pwm conversion coeff

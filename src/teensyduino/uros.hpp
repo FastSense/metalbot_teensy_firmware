@@ -28,6 +28,8 @@ public:
     rclc_support_init(&support, 0, NULL, &allocator);
     node_ops = rcl_node_get_default_options();
     node_ops.domain_id = id;
+    qos = rmw_qos_profile_sensor_data; // best effort qos
+    qos.depth = 5;                     // default
     rclc_node_init_with_options(&node, "micro_ros_arduino_node", "", &support,
                                 &node_ops);
   }
@@ -45,8 +47,7 @@ public:
   /* MICRO_ROS OBJ-S INIT: */
   template <class supportT, class nameT> /////////
   void initPub(rcl_publisher_t *pub, supportT sup, nameT name) {
-    rclc_publisher_init_best_effort(pub, &node, sup, name);
-    // rclc_publisher_init_default(pub, &node, sup, name); //default QoS
+    rclc_publisher_init(pub, &node, sup, name, &qos);
   }
   void finiPub(rcl_publisher_t *pub) { rcl_publisher_fini(pub, &node); }
 
@@ -139,4 +140,6 @@ private:
 
   bool linked = false;
   size_t id;
+
+  rmw_qos_profile_t qos;
 };

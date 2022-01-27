@@ -44,12 +44,13 @@ private:
   float dt_;
   float model_noise_;
   float measurement_noise_;
-  BLA::Matrix<1> matZ;    // input value (wheel path)
-  BLA::Matrix<1> matY;    // predicted state
-  BLA::Matrix<1> matS;    // system uncertainty
-  BLA::Matrix<3> matK;    // kalman gain
-  BLA::Matrix<3> matH;    // transposed observation
-  BLA::Matrix<3> matX;    // estimated system state
+  BLA::Matrix<1> matZ; // input value (wheel path)
+  BLA::Matrix<1> matY; // predicted state
+  BLA::Matrix<1> matS; // system uncertainty
+  BLA::Matrix<3> matK; // kalman gain
+  BLA::Matrix<3> matH; // transposed observation
+  // estimated system state: distance, speed, acceleration (kalmanX enum)
+  BLA::Matrix<3> matX;
   BLA::Matrix<3, 3> matE; // identity matrix
   BLA::Matrix<3, 3> matP; // covariance matrix
   BLA::Matrix<3, 3> matF; // state transition matrix
